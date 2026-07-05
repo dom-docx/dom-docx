@@ -171,6 +171,46 @@ const CSS_CASCADE_CASES: CssCascadeCase[] = [
     computedMinVisual: 85,
     minComputedAdvantage: 0,
   },
+  {
+    name: "stylesheet-blockquote-rule",
+    notes: "Element rule styles blockquote: left bar + background + padding together.",
+    html: `
+      <style>
+        blockquote {
+          border-left: 4px solid #333;
+          padding: 8px 12px;
+          margin: 8px 0;
+          color: #444;
+          background: #f5f5f5;
+        }
+      </style>
+      <blockquote>
+        <p>Quote styled only via stylesheet blockquote rule.</p>
+      </blockquote>
+    `,
+    computedMinVisual: 80,
+    minComputedAdvantage: 5,
+  },
+  {
+    name: "stylesheet-callout-class",
+    notes: "Class rule styles a callout div: left bar + background + padding together.",
+    html: `
+      <style>
+        .callout {
+          border-left: 4px solid #333;
+          padding: 8px 12px;
+          margin: 8px 0;
+          color: #444;
+          background: #f5f5f5;
+        }
+      </style>
+      <div class="callout">
+        <p>Callout styled only via stylesheet class rule.</p>
+      </div>
+    `,
+    computedMinVisual: 80,
+    minComputedAdvantage: 5,
+  },
 ];
 
 export function generateCssCascadeCases(): CssCascadeCase[] {

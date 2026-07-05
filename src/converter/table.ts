@@ -1,6 +1,7 @@
 import {
   AlignmentType,
   BorderStyle,
+  HeightRule,
   LineRuleType,
   Paragraph,
   ShadingType,
@@ -615,12 +616,14 @@ function cellBlockParagraph(
 ): Paragraph {
   const cellCss = resolveCellCss(cell, styleResolver);
   const blockCss = styleResolver.getCss(element);
-  const tag = element.name.toLowerCase() as keyof typeof HEADING_FONT_HALF_POINTS;
+  const tag = element.name.toLowerCase();
   const isHeading = /^h[1-6]$/.test(tag);
 
   const fontSize =
     blockCss.fontSize ??
-    (isHeading ? HEADING_FONT_HALF_POINTS[tag] : undefined) ??
+    (isHeading
+      ? HEADING_FONT_HALF_POINTS[tag as keyof typeof HEADING_FONT_HALF_POINTS]
+      : undefined) ??
     cellCss.fontSize;
   const typography: RunTypography = {
     ...cellTypography(cell, styleResolver),
@@ -631,13 +634,26 @@ function cellBlockParagraph(
   const align = blockCss.textAlign ?? cellCss.textAlign;
   const hasImage = nodesContainImage(element.children ?? []);
 
+  // UA default `<p>` margins (1em of the paragraph's font), same as body flow:
+  // margin-bottom always; margin-top only when the previous sibling isn't a
+  // `<p>` (adjacent-paragraph margins collapse in HTML, but stack in Word).
+  const isParagraphTag = tag === "p";
+  const uaMarginTwips = Math.round(((fontSize ?? 21) / 1.5) * 15);
+  let prev = element.prev;
+  while (prev && prev.type !== "tag") prev = prev.prev;
+  const prevIsParagraph =
+    prev?.type === "tag" && (prev as Element).name.toLowerCase() === "p";
+  const before =
+    blockCss.marginTop ?? (isParagraphTag && !prevIsParagraph ? uaMarginTwips : 0);
+  const after = blockCss.marginBottom ?? (isParagraphTag ? uaMarginTwips : 0);
+
   return new Paragraph({
     ...(align ? { alignment: mapTextAlign(align) } : {}),
     spacing: hasImage
-      ? { before: blockCss.marginTop ?? 0, after: blockCss.marginBottom ?? 0 }
+      ? { before, after }
       : {
-          before: blockCss.marginTop ?? 0,
-          after: blockCss.marginBottom ?? 0,
+          before,
+          after,
           line: exactLineForFontSize(fontSize),
           lineRule: LineRuleType.EXACT,
         },
@@ -702,6 +718,24 @@ function nodeHasInlineContent(node: AnyNode): boolean {
 }
 
 /** Cell content: inline runs, shaded bars, nested tables, and explicit `<p>` blocks. */
+/** Structural wrappers inside cells (`td > div.content > …`) — recursed, not flattened. */
+const CELL_CONTAINER_TAG = /^(?:div|section|center)$/;
+
+/** Block content anywhere under the cell, seen through container wrappers. */
+function cellHasBlockContent(nodes: AnyNode[], styleResolver: StyleResolver): boolean {
+  for (const node of nodes) {
+    if (node.type !== "tag") continue;
+    const el = node as Element;
+    const tag = el.name.toLowerCase();
+    if (/^(?:p|h[1-6]|ul|ol|table)$/.test(tag)) return true;
+    if (colorBarCss(node, styleResolver) !== null) return true;
+    if (CELL_CONTAINER_TAG.test(tag) && cellHasBlockContent(el.children ?? [], styleResolver)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function cellBlocks(
   $: CheerioAPI,
   cell: ParsedCell,
@@ -711,15 +745,7 @@ function cellBlocks(
   cellPadding?: number,
 ): (Paragraph | Table)[] {
   const nodes = cell.element.children ?? [];
-  const hasBars = nodes.some((node) => colorBarCss(node, styleResolver) !== null);
-  const hasNestedTable = nodes.some(
-    (node) => node.type === "tag" && (node as Element).name.toLowerCase() === "table",
-  );
-  const hasBlockChildren = nodes.some(
-    (node) =>
-      node.type === "tag" && /^(?:p|h[1-6]|ul|ol)$/.test((node as Element).name.toLowerCase()),
-  );
-  if (!hasBars && !hasNestedTable && !hasBlockChildren) {
+  if (!cellHasBlockContent(nodes, styleResolver)) {
     return [cellParagraph(cell, styleResolver)];
   }
 
@@ -735,35 +761,50 @@ function cellBlocks(
     pending = [];
   };
 
-  for (const node of nodes) {
-    if (node.type === "tag") {
-      const tag = (node as Element).name.toLowerCase();
-      if (tag === "table") {
-        flushInline();
-        blocks.push(convertTable($, node as Element, styleResolver, contentWidth, true));
-        continue;
+  const walk = (children: AnyNode[]): void => {
+    for (const node of children) {
+      if (node.type === "tag") {
+        const el = node as Element;
+        if (isHiddenElement(el, styleResolver)) continue;
+        const tag = el.name.toLowerCase();
+        if (tag === "table") {
+          flushInline();
+          blocks.push(convertTable($, el, styleResolver, contentWidth, true));
+          continue;
+        }
+        if (/^(?:p|h[1-6])$/.test(tag)) {
+          flushInline();
+          blocks.push(cellBlockParagraph(cell, styleResolver, el));
+          continue;
+        }
+        if (tag === "ul" || tag === "ol") {
+          flushInline();
+          blocks.push(
+            ...processList($, el, { ...DEFAULT_VISITOR_CONTEXT, styleResolver }),
+          );
+          continue;
+        }
+        const barCss = colorBarCss(node, styleResolver);
+        if (barCss) {
+          flushInline();
+          blocks.push(barParagraph(barCss, contentWidth));
+          continue;
+        }
+        if (CELL_CONTAINER_TAG.test(tag)) {
+          // A wrapper div is a block boundary: end any open inline run, then
+          // process its children at this level so nested paragraphs/tables stay
+          // real blocks instead of flattening into one run-on paragraph.
+          flushInline();
+          walk(el.children ?? []);
+          flushInline();
+          continue;
+        }
       }
-      if (/^(?:p|h[1-6])$/.test(tag)) {
-        flushInline();
-        blocks.push(cellBlockParagraph(cell, styleResolver, node as Element));
-        continue;
-      }
-      if (tag === "ul" || tag === "ol") {
-        flushInline();
-        blocks.push(
-          ...processList($, node as Element, { ...DEFAULT_VISITOR_CONTEXT, styleResolver }),
-        );
-        continue;
-      }
-    }
-    const barCss = colorBarCss(node, styleResolver);
-    if (barCss) {
-      flushInline();
-      blocks.push(barParagraph(barCss, contentWidth));
-    } else {
       pending.push(node);
     }
-  }
+  };
+
+  walk(nodes);
   flushInline();
 
   return blocks.length > 0 ? blocks : [cellParagraph(cell, styleResolver)];
@@ -864,6 +905,70 @@ function buildPaddingCell(
 }
 
 /** Pass 2 — emit docx rows aligned to the grid matrix with explicit spans and widths. */
+/** Cell with nothing renderable — no text, no table/list/bar/image anywhere under it. */
+function isRenderableEmptyCell(cell: ParsedCell, styleResolver: StyleResolver): boolean {
+  if (elementPlainText(cell.element).length > 0) return false;
+  if (cellHasBlockContent(cell.element.children ?? [], styleResolver)) return false;
+  const hasImage = (nodes: AnyNode[]): boolean =>
+    nodes.some(
+      (node) =>
+        node.type === "tag" &&
+        ((node as Element).name.toLowerCase() === "img" ||
+          hasImage((node as Element).children ?? [])),
+    );
+  return !hasImage(cell.element.children ?? []);
+}
+
+/** Explicit row height: max of the tr's and its cells' `height` (CSS or attr), in twips. */
+function explicitRowHeightTwips(
+  row: PlacedCell[],
+  styleResolver: StyleResolver,
+): number | undefined {
+  const candidates: number[] = [];
+  const collect = (element: Element): void => {
+    // Computed styles report a concrete USED height for every row — only
+    // author-declared heights count (same rule as cellStyleBorders).
+    const declaredInline = /\bheight\s*:/i.test(element.attribs?.style ?? "");
+    const css = styleResolver.getCss(element);
+    if (css.heightTwips && (styleResolver.source !== "computed" || declaredInline)) {
+      candidates.push(css.heightTwips);
+    }
+    const attr = element.attribs?.height?.trim();
+    if (attr && !attr.endsWith("%")) {
+      const px = parseFloat(attr);
+      if (Number.isFinite(px) && px > 0) candidates.push(pxToTwips(px));
+    }
+  };
+  const tr = row[0]?.cell.row;
+  if (tr) collect(tr);
+  for (const { cell } of row) collect(cell.element);
+  return candidates.length > 0 ? Math.max(...candidates) : undefined;
+}
+
+/**
+ * Row height plan (legacy/email HTML controls vertical rhythm with spacer rows):
+ * - Spacer rows (nothing renderable in any cell) collapse to their declared
+ *   height — or to just the cell padding, matching browsers, instead of the
+ *   full default line box that inflated every divider/gap row (~20px each).
+ * - Content rows with a declared height get AT_LEAST — HTML treats tr/td
+ *   height as a minimum; content may grow past it.
+ */
+function rowHeightOptions(
+  row: PlacedCell[],
+  styleResolver: StyleResolver,
+  cellPadding: number | undefined,
+): { value: number; rule: (typeof HeightRule)[keyof typeof HeightRule] } | undefined {
+  const explicit = explicitRowHeightTwips(row, styleResolver);
+  const isSpacerRow =
+    row.length === 0 || row.every(({ cell }) => isRenderableEmptyCell(cell, styleResolver));
+  if (isSpacerRow) {
+    const padding = (cellPadding ?? 0) * 2;
+    return { value: explicit ?? Math.max(padding, 20), rule: HeightRule.EXACT };
+  }
+  if (explicit) return { value: explicit, rule: HeightRule.ATLEAST };
+  return undefined;
+}
+
 function buildTableRows(
   $: CheerioAPI,
   analysis: GridAnalysis,
@@ -914,7 +1019,8 @@ function buildTableRows(
       columnIndex += 1;
     }
 
-    return new TableRow({ children: docxCells });
+    const height = rowHeightOptions(row, styleResolver, cellPadding);
+    return new TableRow({ children: docxCells, ...(height ? { height } : {}) });
   });
 }
 

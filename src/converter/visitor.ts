@@ -659,7 +659,9 @@ function processBlockContainer(
       for (const child of children) {
         childBlocks.push(...visitElement($, child, childCtx));
       }
-      blocks.push(makeShadedContainerTable(childBlocks, layout));
+      // Pass the container's own borders (e.g. a callout's border-left) — the
+      // cell paints fill AND bar together.
+      blocks.push(makeShadedContainerTable(childBlocks, layout, layout.borders));
 
       const bottomSpacer = marginSpacer(layout.marginBottom);
       if (bottomSpacer) blocks.push(bottomSpacer);
@@ -937,7 +939,15 @@ function processBlockquote($: CheerioAPI, element: Element, ctx: VisitorContext)
   };
 
   let blocks: DocxBlock[];
-  if (hasDirectBlockChild(element)) {
+  if (hasDirectBlockChild(element) && quoteLayout.shading?.fill) {
+    // Shaded blockquote with block children: one container cell paints fill +
+    // bar + padding together (shading is not inheritable, so per-child
+    // inheritance would render the bar but lose the background). Children must
+    // NOT also inherit the bar/indent — the cell handles both.
+    const shadedCtx: VisitorContext = { ...childCtx, inheritedLayout: undefined };
+    const childBlocks = visitNodes($, element.children ?? [], shadedCtx);
+    blocks = [makeShadedContainerTable(childBlocks, quoteLayout, quoteLayout.borders)];
+  } else if (hasDirectBlockChild(element)) {
     blocks = visitNodes($, element.children ?? [], childCtx);
   } else {
     const typography = typographyFromBlockElement(element, ctx.styleResolver);
