@@ -12,6 +12,28 @@ For HTML authoring guidance (what converts well), see [AGENTS.md](./AGENTS.md). 
 npm install dom-docx
 ```
 
+### Browser
+
+```typescript
+import { convertHtmlToDocx } from "dom-docx/browser";
+
+const html = `
+<h1 style="color:#1a1a2e">Quarterly Report</h1>
+<p>Revenue grew <strong>12%</strong> year over year.</p>
+<ul>
+  <li>North America</li>
+  <li>EMEA</li>
+</ul>
+`;
+
+const blob = await convertHtmlToDocx(html);
+// hand the Blob to a download (e.g. saveAs(blob, "output.docx"))
+```
+
+Runs entirely in the user's tab — **no Playwright, no Node `Buffer`**. See the browser entry point section below for the full API.
+
+### Node
+
 ```typescript
 import { writeFile } from "node:fs/promises";
 import { convertHtmlToDocx } from "dom-docx";

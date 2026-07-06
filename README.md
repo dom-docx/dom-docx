@@ -47,6 +47,32 @@ Input is a **body HTML fragment**, same as the API. `--help` for all options.
 
 ## Quick start
 
+### Browser
+
+```typescript
+import { convertHtmlToDocx } from "dom-docx/browser";
+
+const html = `
+<h1 style="color:#1a1a2e">Quarterly Report</h1>
+<p>Revenue grew <strong>12%</strong> year over year.</p>
+<ul>
+  <li>North America</li>
+  <li>EMEA</li>
+</ul>
+`;
+
+const blob = await convertHtmlToDocx(html);
+// e.g. trigger a download in the browser
+const a = document.createElement("a");
+a.href = URL.createObjectURL(blob);
+a.download = "output.docx";
+a.click();
+```
+
+No Playwright, no Node — this runs entirely in the user's tab. See [Browser bundle](#browser-bundle) below.
+
+### Node
+
 ```typescript
 import { writeFile } from "node:fs/promises";
 import { convertHtmlToDocx } from "dom-docx";
