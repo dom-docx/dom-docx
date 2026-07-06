@@ -12,9 +12,15 @@ const COMPUTED_STYLE_SNAPSHOT_FN = readFileSync(
   "utf-8",
 );
 
-export async function snapshotComputedStyles(page: Page): Promise<ComputedStyleSnapshot[]> {
+export async function snapshotComputedStyles(
+  page: Page,
+  rootSelector?: string,
+): Promise<ComputedStyleSnapshot[]> {
+  const rootArg = rootSelector
+    ? `document.querySelector(${JSON.stringify(rootSelector)})`
+    : "null";
   return (await page.evaluate(
-    `(${COMPUTED_STYLE_SNAPSHOT_FN.trim()})()`,
+    `(${COMPUTED_STYLE_SNAPSHOT_FN.trim()})(${rootArg})`,
   )) as ComputedStyleSnapshot[];
 }
 
@@ -33,6 +39,9 @@ export async function createComputedStyleResolver(
   }
 }
 
-export async function computedStyleResolverFromPage(page: Page): Promise<ComputedStyleResolver> {
-  return ComputedStyleResolver.fromSnapshots(await snapshotComputedStyles(page));
+export async function computedStyleResolverFromPage(
+  page: Page,
+  rootSelector?: string,
+): Promise<ComputedStyleResolver> {
+  return ComputedStyleResolver.fromSnapshots(await snapshotComputedStyles(page, rootSelector));
 }

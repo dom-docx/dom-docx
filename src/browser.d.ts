@@ -47,6 +47,8 @@ export interface BrowserConvertOptions {
   styleSource?: StyleSource;
   /** Document to snapshot for `styleSource: "computed"`. Defaults to the host page. */
   document?: Document;
+  /** Export root — pass the live element whose innerHTML is converted (SPA export pattern). */
+  root?: Element;
   /** Resolve non-`data:` `<img src>` before conversion (caller owns fetch policy). */
   imageResolver?: (
     src: string,
@@ -78,7 +80,15 @@ export declare function buildDocxBlob(
   documentConfig?: DocumentConfig,
 ): Promise<Blob>;
 
-export declare function snapshotComputedStylesFromDocument(): ReadonlyMap<string, ParsedCss>;
+export interface ComputedStyleSnapshot {
+  path: string;
+  styles: Record<string, string>;
+}
+
+export declare function snapshotComputedStylesFromDocument(
+  doc?: Document,
+  root?: Element | null,
+): ComputedStyleSnapshot[];
 
 export interface DomDocxGlobal {
   convertHtmlToDocx: typeof convertHtmlToDocx;

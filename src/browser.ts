@@ -17,6 +17,11 @@ export interface BrowserConvertOptions extends DocumentConfig {
   styleSource?: StyleSource;
   /** Document to snapshot for `styleSource: "computed"`. Defaults to the host page. */
   document?: Document;
+  /**
+   * Export root for `styleSource: "computed"`. Pass the live element whose `innerHTML`
+   * you convert so computed-style paths match the fragment tree (SPA export pattern).
+   */
+  root?: Element;
   /** Resolve non-`data:` `<img src>` before conversion (caller owns fetch policy). */
   imageResolver?: ImageResolver;
 }
@@ -36,7 +41,7 @@ export async function convertHtmlToDocxUint8Array(
     styleSource === "inline"
       ? INLINE_STYLE_RESOLVER
       : ComputedStyleResolver.fromSnapshots(
-          snapshotComputedStylesFromDocument(options?.document ?? document),
+          snapshotComputedStylesFromDocument(options?.document ?? document, options?.root),
         );
   return buildDocxUint8Array(html, resolver, options?.imageResolver, documentConfig(options));
 }
@@ -45,8 +50,8 @@ export async function convertHtmlToDocxUint8Array(
  * Convert an HTML body fragment to a `.docx` Blob in the browser.
  *
  * - `inline` (default): parses `style=""` only — no live DOM required for styles.
- * - `computed`: batch-reads `getComputedStyle` from the **current** `document.body`
- *   tree (or `options.document` when provided). The page must already render the same fragment.
+ * - `computed`: batch-reads `getComputedStyle` from the export root (or full `document.body`
+ *   when `root` is omitted). Pass `root` when converting `element.innerHTML` from a live SPA.
  */
 export async function convertHtmlToDocx(
   html: string,

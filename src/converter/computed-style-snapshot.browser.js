@@ -1,8 +1,9 @@
-() => {
-  const elementStylePath = (el) => {
+(root) => {
+  const elementStylePathFrom = (el, rootEl) => {
+    const stopBefore = rootEl || document.body;
     const parts = [];
     let current = el;
-    while (current && current.tagName !== "BODY") {
+    while (current && current !== stopBefore) {
       const tagName = current.tagName.toLowerCase();
       const parent = current.parentElement;
       if (!parent) break;
@@ -57,17 +58,26 @@
       const prop = props[i];
       styles[prop] = cs[prop];
     }
-    results.push({ path: elementStylePath(el), styles: styles });
+    results.push({ path: elementStylePathFrom(el, root), styles: styles });
     const children = el.children;
     for (let i = 0; i < children.length; i++) {
       const child = children[i];
       if (child instanceof Element) walk(child);
     }
   };
-  const bodyChildren = document.body.children;
-  for (let i = 0; i < bodyChildren.length; i++) {
-    const child = bodyChildren[i];
-    if (child instanceof Element) walk(child);
+
+  if (root) {
+    const rootChildren = root.children;
+    for (let i = 0; i < rootChildren.length; i++) {
+      const child = rootChildren[i];
+      if (child instanceof Element) walk(child);
+    }
+  } else {
+    const bodyChildren = document.body.children;
+    for (let i = 0; i < bodyChildren.length; i++) {
+      const child = bodyChildren[i];
+      if (child instanceof Element) walk(child);
+    }
   }
   return results;
 }

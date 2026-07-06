@@ -27,6 +27,11 @@ export interface ConvertOptions extends DocumentConfig {
    */
   page?: Page;
   /**
+   * CSS selector for the export root when converting `element.innerHTML` from a live page
+   * (must match the node whose innerHTML was passed as `html`). Playwright `page` path only.
+   */
+  rootSelector?: string;
+  /**
    * Resolve non-`data:` `<img src>` (e.g. `http(s):` / `file:`). The library never fetches
    * on its own — supply this hook to enable remote/local images, and own the fetch plus its
    * security policy (host allowlist, SSRF/private-IP blocking, auth, size caps). Without it,
@@ -53,7 +58,10 @@ async function resolveStyleResolver(
   }
 
   if (options?.page) {
-    return { resolver: await computedStyleResolverFromPage(options.page), ownsBrowser: null };
+    return {
+      resolver: await computedStyleResolverFromPage(options.page, options.rootSelector),
+      ownsBrowser: null,
+    };
   }
 
   // Lazy-load Playwright only on the spawn path — the default inline path never reaches

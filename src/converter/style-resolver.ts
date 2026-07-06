@@ -146,8 +146,13 @@ export class ComputedStyleResolver implements StyleResolver {
   }
 
   getCss(element: Element): ParsedCss {
-    const css = this.byPath.get(elementStylePath(element)) ?? {};
-    return normalizeComputedUACss(element, css);
+    const path = elementStylePath(element);
+    const fromComputed = this.byPath.get(path);
+    if (fromComputed !== undefined) {
+      return normalizeComputedUACss(element, fromComputed);
+    }
+    // Path miss (e.g. fragment export without root-scoped snapshot) — preserve inline style="".
+    return normalizeComputedUACss(element, INLINE_STYLE_RESOLVER.getCss(element));
   }
 }
 

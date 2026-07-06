@@ -9,30 +9,36 @@ function isElement(node: Node): node is Element {
   return node.nodeType === ELEMENT_NODE;
 }
 
+/** Stable path from `el` up to (but not including) `root`, or `body` when `root` is omitted. */
+function elementStylePathFrom(el: Element, root?: Element | null): string {
+  const stopBefore = root ?? el.ownerDocument.body;
+  const parts: string[] = [];
+  let current: Element | null = el;
+
+  while (current && current !== stopBefore) {
+    const tagName = current.tagName.toLowerCase();
+    const parent: Element | null = current.parentElement;
+    if (!parent) break;
+
+    const siblings = Array.from(parent.children).filter(
+      (c: Element) => c.tagName.toLowerCase() === tagName,
+    );
+    const index = siblings.indexOf(current);
+    parts.unshift(`${tagName}[${index}]`);
+    current = parent;
+  }
+
+  return parts.join("/");
+}
+
 /**
- * Batch-read `getComputedStyle` for every element under `document.body` children.
- * Browser-native primitive — no Playwright, no server round-trip.
+ * Batch-read `getComputedStyle` for elements under `root` (or `document.body` when omitted).
+ * Paths are relative to `root` so they match cheerio paths for `root.innerHTML` fragments.
  */
 export function snapshotComputedStylesFromDocument(
   doc: Document = document,
+  root?: Element | null,
 ): ComputedStyleSnapshot[] {
-  const elementStylePath = (el: Element): string => {
-    const parts: string[] = [];
-    let current: Element | null = el;
-    while (current && current.tagName !== "BODY") {
-      const tagName = current.tagName.toLowerCase();
-      const parent: Element | null = current.parentElement;
-      if (!parent) break;
-      const siblings = Array.from(parent.children).filter(
-        (c: Element) => c.tagName.toLowerCase() === tagName,
-      );
-      const index = siblings.indexOf(current);
-      parts.unshift(`${tagName}[${index}]`);
-      current = parent;
-    }
-    return parts.join("/");
-  };
-
   const props = [
     "color",
     "backgroundColor",
@@ -75,14 +81,20 @@ export function snapshotComputedStylesFromDocument(
     for (const prop of props) {
       styles[prop] = cs[prop as keyof CSSStyleDeclaration] as string;
     }
-    results.push({ path: elementStylePath(el), styles });
+    results.push({ path: elementStylePathFrom(el, root), styles });
     for (const child of el.children) {
       if (isElement(child)) walk(child);
     }
   };
 
-  for (const child of doc.body.children) {
-    if (isElement(child)) walk(child);
+  if (root) {
+    for (const child of root.children) {
+      if (isElement(child)) walk(child);
+    }
+  } else {
+    for (const child of doc.body.children) {
+      if (isElement(child)) walk(child);
+    }
   }
   return results;
 }
