@@ -28,8 +28,6 @@ Engine Score = (Visual × 0.50) + (Editability × 0.35) + (Performance × 0.15)
 | **Editability** | 35% | Structural fluidity for the human document lifecycle |
 | **Performance** | 15% | TypeScript compilation speed; penalizes unnecessary complexity |
 
-> **Methodology note (2026-07-02).** The visual component was switched from pixel-overlap (pixelmatch) to **ink-projection layout fidelity**. Validated against a 33-case human-labeled ground truth, pixel overlap had **44.9% pairwise concordance with human quality ratings (a coin flip; identical group means for "looks right" and "broken")**, while the layout metric reaches **85.6%** with monotonic separation. Pixel match is still computed and recorded on every case as a **regression tripwire** — same-case deltas remain a sensitive "did anything change" alarm — it just no longer contributes to the score. Full research trail: `internal/research/visual-scoring-metric-research-2026-07-02.md`.
-
 ---
 
 ## Visual match
@@ -57,8 +55,6 @@ The scored visual signal starts with **layout fidelity** (`tools/layout-fidelity
 - **Ink-amount factor** — `0.85 + 0.15 × inkRatio` keeps missing/extra content penalized.
 - Score = `100 × (0.55·Vsim + 0.45·Hsim) × inkFactor × bandFactor`. Because it is AA-invariant, **~100 is genuinely achievable for a correct render.**
 
-**Human validation (2026-07-02):** all 33 suite renders were hand-labeled (blind — no scores shown, shuffled order) as looks-right / minor / broken. Pairwise concordance with those ratings: layout metric **85.6%** (group means 94.8 / 86.6 / 68.7); pixel overlap **44.9%** (group means 89.3 / 90.1 / 89.2 — no signal). Deliberately mismatched "broken control" pairs score ~26–36 on layout vs ~93 on pixel. Ground truth: `internal/research/human-labels.json`; relabel any time with `npm run label:renders`.
-
 **Content-quality guards** are then applied on top — they catch defects layout profiles cannot see:
 
 | Guard | Module | Catches |
@@ -84,7 +80,7 @@ visualScore = layoutFidelity.score * factor;
 
 HTML display text for fidelity uses `htmlFragmentDisplayText()` (synthesizes `1. …` for `<ol>`) because Playwright `innerText` omits list numbers.
 
-**Known limitations of the layout metric** (from the labeled set, documented in the module header): uniformly taller-but-complete content (`flex-row-horizontal`: cards ~2× taller, wrapped text) is under-penalized (~85); pure styling defects (wrong font size/color with same geometry) are invisible to it by design — that is the text-content/legibility guards' jurisdiction.
+**Known limitations of the layout metric** TODO: Document current known limitations.
 
 **Report-only signals** (recorded, never folded into `visualScore`):
 
