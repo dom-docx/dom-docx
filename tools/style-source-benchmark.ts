@@ -52,7 +52,7 @@ interface LaneCaseResult extends CaseResult {
   regression?: boolean;
 }
 
-interface StyleSourceComparisonResults {
+export interface StyleSourceComparisonResults {
   version: 2;
   kind: "style-source-comparison";
   runAt: string;

@@ -43,7 +43,7 @@ interface CalibrationCaseResult {
   error?: string;
 }
 
-interface CalibrationResults {
+export interface CalibrationResults {
   version: 1;
   runAt: string;
   mode: LoopCaseMode;

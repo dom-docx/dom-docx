@@ -12,6 +12,28 @@ For HTML authoring guidance (what converts well), see [AGENTS.md](./AGENTS.md). 
 npm install dom-docx
 ```
 
+### Browser
+
+```typescript
+import { convertHtmlToDocx } from "dom-docx/browser";
+
+const html = `
+<h1 style="color:#1a1a2e">Quarterly Report</h1>
+<p>Revenue grew <strong>12%</strong> year over year.</p>
+<ul>
+  <li>North America</li>
+  <li>EMEA</li>
+</ul>
+`;
+
+const blob = await convertHtmlToDocx(html);
+// hand the Blob to a download (e.g. saveAs(blob, "output.docx"))
+```
+
+Runs entirely in the user's tab — **no Playwright, no Node `Buffer`**. See the browser entry point section below for the full API.
+
+### Node
+
 ```typescript
 import { writeFile } from "node:fs/promises";
 import { convertHtmlToDocx } from "dom-docx";
@@ -620,8 +642,8 @@ These exercise the API and write artifacts under `output/`:
 
 | Command | What it runs |
 |---------|----------------|
-| `npm run test:suite` | Full 36-case visual + XML regression suite (needs Chromium + LibreOffice) |
-| `npm run test:suite:priority` | 10-case fast subset |
+| `npm run test:suite` | Full visual + XML regression suite (cases: `tools/generator.ts`; needs Chromium + LibreOffice) |
+| `npm run test:suite:priority` | Fast subset of the same cases |
 | `npm run test:inline-guard` | Asserts inline path OOXML equivalence (normalized XML) |
 | `npm run test:config` | `ConvertOptions` OOXML checks |
 | `npm run test:benchmark` | OSS html-to-docx / TurboDocx comparison |

@@ -63,6 +63,7 @@
     "test:suite:strict": "tsx tools/validator.ts --strict-visual",
     "test:showcase": "tsx tools/showcase-runner.ts",
     "test:benchmark": "tsx tools/benchmark-runner.ts all",
+    "docs:sync": "tsx tools/docs-sync.ts",
     "test:inline-guard": "tsx tools/inline-path-guard.ts",
     "test:config": "tsx tools/config-options-test.ts",
     "label:renders": "tsx tools/label-renders.ts",

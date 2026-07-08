@@ -1,10 +1,6 @@
 # Validation scores
 
-Latest suite metrics from `npm run test:suite`. **How scores are computed:** [SCORING.md](./SCORING.md).
-
-**Run:** 2026-07-03T20:35Z · Chromium 149.0.7827.55 · LibreOffice 26.2.4.2 · 35 cases
-
-> **Methodology change (2026-07-02): visual score is now layout-based.** The scored visual signal switched from pixel overlap to **ink-projection layout fidelity + content-quality guards** after blind human labeling of all 33 renders showed pixel overlap had coin-flip concordance (44.9%) with human quality judgments while the layout metric reaches 85.6% ([SCORING.md](./SCORING.md)). Raw pixel match is still recorded per case as a regression tripwire. Numbers below are **not comparable** to earlier (pixel-based) score history.
+To generate suite metrics, use `npm run test:suite`. **How scores are computed:** [SCORING.md](./SCORING.md).
 
 ## Summary
 
@@ -18,9 +14,7 @@ Latest suite metrics from `npm run test:suite`. **How scores are computed:** [SC
 | Avg compile | — | — | **25.3 ms** |
 | Identity-pair calibration (full 35) | — | — | **mean 97.13% / min 90.46%** |
 
-**Human-label cross-check** (blind ratings, `internal/research/human-labels.json`): visual means by rating are monotonic. Remaining human-rated weak spots: `flex-row-horizontal` 85.3 (**under-penalized** — cards taller, text wrapped). Fixed since labeling: `table-cell-bar-divs`, `flex-column-vertical`, `nested-blockquotes-lists`. New cases and post-fix `borderless-table` not yet re-labeled.
-
-Tables below use the **layout-based visual** score; misaligned px is the raw pixel tripwire. Diff images: `output/suite/diff_{name}.png`. Full machine-readable output: `output/suite/results.json`.
+Tables below use the **layout-based visual** score; misaligned px is the raw pixel tripwire.
 
 ---
 

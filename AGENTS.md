@@ -308,8 +308,8 @@ table Owner | Action | Status with row backgrounds
 
 ```bash
 npm run typecheck          # TypeScript
-npm run test:suite          # full 33 cases — visual + XML + editability
-npm run test:suite:priority # 10-case subset for fast iteration
+npm run test:suite          # full suite: visual + XML + editability (cases: tools/generator.ts)
+npm run test:suite:priority # fast subset of the same cases
 npm run test:showcase      # 6 rich real-world examples
 ```
 

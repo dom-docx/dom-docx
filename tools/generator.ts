@@ -4,6 +4,8 @@ import type { ConvertOptions } from "../src/converter.js";
 export interface TestCase {
   name: string;
   html: string;
+  /** One-line human description used to render docs tables (see tools/docs-sync.ts). */
+  description?: string;
   /** Custom conversion path (e.g. `rasterizeInPlace`). Omitted cases use default inline. */
   convertOptions?: ConvertOptions;
 }
@@ -27,10 +29,12 @@ export function resolveHarnessConvertOptions(
 const STANDARD_TEST_CASES: TestCase[] = [
   {
     name: "plain-paragraph",
+    description: "Single unstyled `<p>`",
     html: `<p>This is a single plain paragraph with no formatting.</p>`,
   },
   {
     name: "multiple-paragraphs",
+    description: "Three sequential paragraphs",
     html: `
       <p>First paragraph of a short document.</p>
       <p>Second paragraph follows normally.</p>
@@ -39,6 +43,7 @@ const STANDARD_TEST_CASES: TestCase[] = [
   },
   {
     name: "heading-hierarchy",
+    description: "h1 / h2 / h3 with body text",
     html: `
       <h1>Document Title</h1>
       <h2>Section One</h2>
@@ -51,6 +56,7 @@ const STANDARD_TEST_CASES: TestCase[] = [
   },
   {
     name: "simple-unordered-list",
+    description: "Basic `<ul>` with 3 items",
     html: `
       <ul>
         <li>Apples</li>
@@ -61,6 +67,7 @@ const STANDARD_TEST_CASES: TestCase[] = [
   },
   {
     name: "simple-ordered-list",
+    description: "Basic `<ol>` with 3 items",
     html: `
       <ol>
         <li>Preheat the oven</li>
@@ -71,6 +78,7 @@ const STANDARD_TEST_CASES: TestCase[] = [
   },
   {
     name: "ordered-list-rich-inline",
+    description: "`<ol>` with `<strong>` + highlighted `<span>` per item",
     html: `
       <h2 style="font-size:15px">Rep leaderboard (top 3)</h2>
       <ol>
@@ -82,6 +90,7 @@ const STANDARD_TEST_CASES: TestCase[] = [
   },
   {
     name: "paragraph-and-list",
+    description: "Intro paragraph + `<ul>`",
     html: `
       <p>Shopping list for the week:</p>
       <ul>
@@ -93,10 +102,12 @@ const STANDARD_TEST_CASES: TestCase[] = [
   },
   {
     name: "simple-link",
+    description: "One hyperlinked anchor",
     html: `<p>Visit <a href="https://example.com">Example Domain</a> for more info.</p>`,
   },
   {
     name: "multiple-links",
+    description: "Two links in one sentence",
     html: `
       <p>
         See <a href="https://example.com/a">link A</a> and
@@ -106,6 +117,7 @@ const STANDARD_TEST_CASES: TestCase[] = [
   },
   {
     name: "basic-inline-formatting",
+    description: "`<strong>`, `<em>`, nested bold-italic",
     html: `
       <p>
         This sentence has <strong>bold</strong>, <em>italic</em>, and
@@ -115,6 +127,7 @@ const STANDARD_TEST_CASES: TestCase[] = [
   },
   {
     name: "pre-code-block",
+    description: "Fenced `<pre><code>` + inline `<code>`",
     html: `
       <p>Install and convert:</p>
       <pre style="background:#f5f5f5;padding:12px 14px;border:1px solid #ddd;font-size:13px;line-height:1.45;white-space:pre"><code>npm install dom-docx
@@ -125,6 +138,7 @@ const docx = await convertHtmlToDocx(html);</code></pre>
   },
   {
     name: "simple-table-2x2",
+    description: "2-column table, header + one row",
     html: `
       <table border="1" cellpadding="4" style="border-collapse:collapse;width:100%">
         <tr><td>Name</td><td>Value</td></tr>
@@ -134,6 +148,7 @@ const docx = await convertHtmlToDocx(html);</code></pre>
   },
   {
     name: "simple-table-3col",
+    description: "3-column table, 3 rows",
     html: `
       <table border="1" cellpadding="4" style="border-collapse:collapse;width:100%">
         <tr><td>Item</td><td>Qty</td><td>Price</td></tr>
@@ -144,6 +159,7 @@ const docx = await convertHtmlToDocx(html);</code></pre>
   },
   {
     name: "paragraph-with-line-break",
+    description: "Address block with `<br>` tags",
     html: `
       <p>
         Line one of the address.<br>
@@ -154,6 +170,7 @@ const docx = await convertHtmlToDocx(html);</code></pre>
   },
   {
     name: "simple-blockquote",
+    description: "Plain blockquote + paragraph",
     html: `
       <blockquote>
         <p>Simplicity is the ultimate sophistication.</p>
@@ -162,10 +179,12 @@ const docx = await convertHtmlToDocx(html);</code></pre>
   },
   {
     name: "centered-paragraph",
+    description: "`text-align: center`",
     html: `<p style="text-align:center">This paragraph is centered.</p>`,
   },
   {
     name: "horizontal-rule",
+    description: "Content separated by `<hr>`",
     html: `
       <p>Content above the rule.</p>
       <hr>
@@ -178,6 +197,7 @@ const docx = await convertHtmlToDocx(html);</code></pre>
 const EDGE_TEST_CASES: TestCase[] = [
   {
     name: "typography-colors",
+    description: "Foreground/background colors, mixed inline & block",
     html: `
       <h1 style="color:#1a1a2e;background:#eaeaea;padding:8px">Heading Alpha</h1>
       <p style="color:#e63946;font-size:18px">Red foreground text with <strong>bold</strong> and <em>italic</em>.</p>
@@ -188,6 +208,7 @@ const EDGE_TEST_CASES: TestCase[] = [
   },
   {
     name: "table-mismatched-cells",
+    description: "Colspan, short rows, extra cells",
     html: `
       <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%">
         <tr><td>A1</td><td>A2</td><td>A3</td></tr>
@@ -199,6 +220,7 @@ const EDGE_TEST_CASES: TestCase[] = [
   },
   {
     name: "borderless-table",
+    description: "Label/value table with `border:none`",
     html: `
       <h2 style="font-size:16px">Connection details</h2>
       <table border="0" cellpadding="8" style="border-collapse:collapse;width:100%;border:none">
@@ -223,6 +245,7 @@ const EDGE_TEST_CASES: TestCase[] = [
   },
   {
     name: "table-row-backgrounds",
+    description: "Shaded `<tr>` bands",
     html: `
       <table border="1" cellpadding="8" style="border-collapse:collapse;width:100%">
         <tr style="background:#1a1a2e;color:#f1faee">
@@ -237,6 +260,7 @@ const EDGE_TEST_CASES: TestCase[] = [
   },
   {
     name: "nested-blockquotes-lists",
+    description: "Nested quotes, `<ol>` inside `<ul>`",
     html: `
       <blockquote style="border-left:4px solid #333;padding-left:12px;margin:8px 0">
         Outer quote
@@ -257,6 +281,7 @@ const EDGE_TEST_CASES: TestCase[] = [
   },
   {
     name: "inline-vs-block",
+    description: "Spans, links, code, styled divs",
     html: `
       <p>
         <span style="background:#ff0">Inline span</span>
@@ -271,6 +296,7 @@ const EDGE_TEST_CASES: TestCase[] = [
   },
   {
     name: "inline-backgrounds",
+    description: "Multi-color inline highlights, bold in shaded span",
     html: `
       <p>
         <span style="background:#cfc">Green highlight</span>
@@ -286,6 +312,7 @@ const EDGE_TEST_CASES: TestCase[] = [
   },
   {
     name: "mixed-margins-paddings",
+    description: "Asymmetric margin/padding, bordered box",
     html: `
       <div style="margin:40px 20px 10px 60px;padding:16px 32px 8px 12px;background:#f5f5f5">
         Box with asymmetric margin and padding.
@@ -298,6 +325,7 @@ const EDGE_TEST_CASES: TestCase[] = [
   },
   {
     name: "flex-row-horizontal",
+    description: "`display:flex; flex-direction:row` — three columns with gap",
     html: `
       <div style="display:flex;flex-direction:row;gap:12px;padding:8px;background:#f0f0f0">
         <div style="background:#ccffcc;padding:8px;text-align:center">Alpha</div>
@@ -308,6 +336,7 @@ const EDGE_TEST_CASES: TestCase[] = [
   },
   {
     name: "flex-column-vertical",
+    description: "`display:flex; flex-direction:column` — stacked rows with gap",
     html: `
       <div style="display:flex;flex-direction:column;gap:10px;padding:12px;background:#f5f5f5">
         <div style="background:#dddddd;padding:8px">First row</div>
@@ -318,6 +347,7 @@ const EDGE_TEST_CASES: TestCase[] = [
   },
   {
     name: "inline-svg-chart",
+    description: "Inline SVG bar chart → native DOCX bands",
     html: `
       <p><strong>Activation funnel</strong></p>
       <figure style="margin:8px 0;text-align:center">
@@ -334,6 +364,7 @@ const EDGE_TEST_CASES: TestCase[] = [
   },
   {
     name: "rasterize-in-place-chart",
+    description: "Complex SVG + canvas rasterized via `rasterizeInPlace` before conversion",
     html: `
       <p><strong>Monthly active users</strong></p>
       <figure style="margin:8px 0;text-align:center">
@@ -396,6 +427,7 @@ const EDGE_TEST_CASES: TestCase[] = [
   },
   {
     name: "table-cell-bar-divs",
+    description: "CSS bar divs inside table cells",
     html: `
       <table border="1" cellpadding="8" style="border-collapse:collapse;width:100%">
         <tr style="background:#457b9d;color:#f1faee">
@@ -423,6 +455,7 @@ const EDGE_TEST_CASES: TestCase[] = [
   },
   {
     name: "unicode-emoji-content",
+    description: "Emoji in body text",
     html: `
       <h2 style="font-size:15px">✅ What went well</h2>
       <table border="1" cellpadding="10" style="border-collapse:collapse;width:100%">
@@ -439,6 +472,7 @@ const EDGE_TEST_CASES: TestCase[] = [
   },
   {
     name: "image-block",
+    description: "`data:` URL `<img>` in a centered paragraph",
     html: `
       <p><strong>Quarterly revenue</strong></p>
       <p style="text-align:center"><img src="${TEST_IMAGE_260x140}" width="${TEST_IMAGE_W}" height="${TEST_IMAGE_H}" alt="Quarterly revenue bar chart"></p>
@@ -447,6 +481,7 @@ const EDGE_TEST_CASES: TestCase[] = [
   },
   {
     name: "image-figure",
+    description: "`<figure>` → `<img>` + `<figcaption>`",
     html: `
       <figure style="margin:8px 0;text-align:center">
         <img src="${TEST_IMAGE_260x140}" width="${TEST_IMAGE_W}" height="${TEST_IMAGE_H}" alt="Quarterly revenue bar chart">
@@ -456,6 +491,7 @@ const EDGE_TEST_CASES: TestCase[] = [
   },
   {
     name: "ordered-list-lower-alpha",
+    description: "`<ol list-style-type:lower-alpha>`",
     html: `
       <p>Steps:</p>
       <ol style="list-style-type:lower-alpha">
@@ -467,6 +503,7 @@ const EDGE_TEST_CASES: TestCase[] = [
   },
   {
     name: "ordered-list-upper-roman",
+    description: "`<ol list-style-type:upper-roman>`",
     html: `
       <p>Phases:</p>
       <ol style="list-style-type:upper-roman">
@@ -478,6 +515,7 @@ const EDGE_TEST_CASES: TestCase[] = [
   },
   {
     name: "unordered-list-square",
+    description: "`<ul list-style-type:square>`",
     html: `
       <p>Checklist:</p>
       <ul style="list-style-type:square">

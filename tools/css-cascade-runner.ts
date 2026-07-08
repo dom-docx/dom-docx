@@ -42,7 +42,7 @@ interface CssCascadeCaseResult {
   failures: string[];
 }
 
-interface CssCascadeResults {
+export interface CssCascadeResults {
   version: 1;
   kind: "css-cascade";
   runAt: string;

@@ -35,7 +35,7 @@ interface DomDocxCaseSnapshot {
   xmlPassed?: boolean;
 }
 
-interface BenchmarkResults {
+export interface BenchmarkResults {
   version: 1;
   kind: "benchmark";
   library: {
