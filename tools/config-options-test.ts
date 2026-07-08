@@ -1,10 +1,13 @@
 import { unzipSync } from "fflate";
 import { convertHtmlToDocx, type ConvertOptions } from "../src/converter.js";
+import { writeGuardResult } from "./guard-result.js";
 
 const HTML = `<p>Config option test document.</p>`;
 
 let failures = 0;
+let checksRun = 0;
 function check(name: string, cond: boolean, detail?: string): void {
+  checksRun += 1;
   if (cond) {
     console.log(`  ✓ ${name}`);
   } else {
@@ -126,6 +129,15 @@ async function main(): Promise<void> {
   check("no rtl when ltr (default)", !/<w:rtl\s*\/>/.test(await docDefaults(undefined)));
 
   console.log(failures === 0 ? "\nAll config-option tests passed." : `\n${failures} check(s) failed.`);
+  await writeGuardResult({
+    id: "config-options",
+    label: "Config options",
+    passed: checksRun - failures,
+    total: checksRun,
+    ok: failures === 0,
+    unit: "checks passed",
+    command: "npm run guard:config",
+  });
   if (failures > 0) process.exitCode = 1;
 }
 

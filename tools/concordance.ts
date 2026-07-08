@@ -11,7 +11,7 @@
  * harness prints labeledAt vs runAt — if the converter changed in between,
  * regenerate the labeling page and relabel before trusting the numbers.
  *
- * Run: npm run concordance
+ * Run: npm run research:concordance
  *      tsx tools/concordance.ts --labels <labels.json> --results <results.json>
  */
 import { existsSync } from "node:fs";

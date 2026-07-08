@@ -4,6 +4,7 @@ import { convertHtmlToDocx } from "../src/converter.js";
 import { wrapHtml } from "../src/html-wrap.js";
 import { VIEWPORT_HEIGHT_PX, VIEWPORT_WIDTH_PX } from "../src/converter/constants.js";
 import { generateTestCases } from "./generator.js";
+import { writeGuardResult } from "./guard-result.js";
 
 const VIEWPORT = { width: VIEWPORT_WIDTH_PX, height: VIEWPORT_HEIGHT_PX };
 
@@ -72,6 +73,15 @@ async function main(): Promise<void> {
       const diverging = firstDivergingPart(oracleBuf, nativeBuf);
       if (diverging) {
         console.error(`computed parity mismatch: ${testCase.name} (diverges in ${diverging})`);
+        await writeGuardResult({
+          id: "computed-parity",
+          label: "Computed parity (oracle vs native)",
+          passed,
+          total: cases.length,
+          ok: false,
+          unit: "byte-identical",
+          command: "npm run guard:computed-parity",
+        });
         process.exitCode = 1;
         return;
       }
@@ -84,6 +94,15 @@ async function main(): Promise<void> {
   console.log(
     `computed parity guard: ${passed}/${cases.length} cases byte-identical (oracle vs browser-native)`,
   );
+  await writeGuardResult({
+    id: "computed-parity",
+    label: "Computed parity (oracle vs native)",
+    passed,
+    total: cases.length,
+    ok: true,
+    unit: "byte-identical",
+    command: "npm run guard:computed-parity",
+  });
 }
 
 main().catch((err) => {

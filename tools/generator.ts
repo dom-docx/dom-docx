@@ -460,7 +460,7 @@ export function generateEdgeTestCases(): TestCase[] {
 
 /**
  * Fast regression subset (~10 cases) — one anchor per major pattern.
- * Full suite: `npm run test:suite` · subset: `npm run test:suite:priority`
+ * Full suite: `npm run score:suite` · subset: `npm run score:suite:priority`
  */
 export const PRIORITY_LOOP_CASE_NAMES = [
   "plain-paragraph",

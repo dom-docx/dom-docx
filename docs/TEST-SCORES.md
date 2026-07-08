@@ -1,6 +1,6 @@
 # Validation scores
 
-To generate suite metrics, use `npm run test:suite`. **How scores are computed:** [SCORING.md](./SCORING.md).
+To generate suite metrics, use `npm run score:suite`. **How scores are computed:** [SCORING.md](./SCORING.md).
 
 ## Summary
 
@@ -84,6 +84,6 @@ Under layout-based scoring these align best with blind human ratings (1 = looks 
 
 ## Related
 
-- **OSS comparison** — run `npm run test:benchmark` after a loop; see [BENCHMARK.md](./BENCHMARK.md)
+- **OSS comparison** — run `npm run score:benchmark` after a loop; see [BENCHMARK.md](./BENCHMARK.md)
 - **Style-source lanes** (inline vs computed) — [BENCHMARK.md](./BENCHMARK.md#style-source-inline-vs-computed-oracle-vs-computed-native-dom-docx)
-- **Regenerate** — `npm run test:suite` (full) or `npm run test:suite:priority` (10-case subset)
+- **Regenerate** — `npm run score:suite` (full) or `npm run score:suite:priority` (fast subset), then `npm run docs:sync`

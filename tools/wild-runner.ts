@@ -12,7 +12,7 @@
  *     so the labeler isn't anchored); Export downloads wild-labels.json →
  *     save to internal/research/wild-labels.json for metric-concordance work.
  *
- * Run: npm run test:wild
+ * Run: npm run research:wild
  */
 import { access, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";

@@ -308,9 +308,9 @@ table Owner | Action | Status with row backgrounds
 
 ```bash
 npm run typecheck          # TypeScript
-npm run test:suite          # full suite: visual + XML + editability (cases: tools/generator.ts)
-npm run test:suite:priority # fast subset of the same cases
-npm run test:showcase      # 6 rich real-world examples
+npm run score:suite          # full suite: visual + XML + editability (cases: tools/generator.ts)
+npm run score:suite:priority # fast subset of the same cases
+npm run showcase      # 6 rich real-world examples
 ```
 
 After conversion, OOXML should pass schema validation. For critical documents, open `output.docx` in Word and verify tables are editable cell-by-cell and lists use native numbering.

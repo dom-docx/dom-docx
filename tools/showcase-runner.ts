@@ -261,7 +261,7 @@ function printShowcaseReport(cases: ShowcaseCase[], results: CaseResult[]): void
   console.log(line);
   console.log(`  Output: ${OUTPUT_DIR}`);
   console.log(`  Results JSON: ${RESULTS_JSON}`);
-  console.log(`  (Not included in npm run test:suite regression suite)\n`);
+  console.log(`  (Not included in npm run score:suite regression suite)\n`);
 
   for (const showcase of cases) {
     const r = results.find((x) => x.name === showcase.name);

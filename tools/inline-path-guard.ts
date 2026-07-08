@@ -1,6 +1,7 @@
 import { unzipSync } from "fflate";
 import { convertHtmlToDocx } from "../src/converter.js";
 import { generateTestCases } from "./generator.js";
+import { writeGuardResult } from "./guard-result.js";
 
 /** Strip docx-library random ids so two inline conversions compare equal. */
 function normalizeWordXml(xml: string): string {
@@ -45,6 +46,15 @@ async function main(): Promise<void> {
     const explicitBuf = await convertHtmlToDocx(testCase.html, { styleSource: "inline" });
     if (!inlineOutputsEquivalent(defaultBuf, explicitBuf)) {
       console.error(`inline path mismatch: ${testCase.name} (normalized word/*.xml differ)`);
+      await writeGuardResult({
+        id: "inline-path",
+        label: "Inline path",
+        passed,
+        total: cases.length,
+        ok: false,
+        unit: "equivalent (default vs explicit inline)",
+        command: "npm run guard:inline",
+      });
       process.exitCode = 1;
       return;
     }
@@ -54,6 +64,15 @@ async function main(): Promise<void> {
   console.log(
     `inline path guard: ${passed}/${cases.length} cases equivalent (default vs styleSource: "inline")`,
   );
+  await writeGuardResult({
+    id: "inline-path",
+    label: "Inline path",
+    passed,
+    total: cases.length,
+    ok: true,
+    unit: "equivalent (default vs explicit inline)",
+    command: "npm run guard:inline",
+  });
 }
 
 main().catch((err) => {
