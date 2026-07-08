@@ -3,18 +3,22 @@
  * so per-case tables can't drift from generator.ts or go stale after a scoring change.
  *
  * Prerequisites (run first, freshest last):
- *   npm run test:suite       → output/suite/results.json           (required)
- *   npm run test:benchmark   → output/benchmark/results-*.json     (required for BENCHMARK.md)
+ *   npm run score:suite       → output/suite/results.json           (required)
+ *   npm run score:benchmark   → output/benchmark/results-*.json     (required for BENCHMARK.md)
  *
- * Optional, included only if present:
- *   tsx tools/style-source-benchmark.ts  → output/benchmark/style-source/results-dom-docx-computed.json
- *   tsx tools/css-cascade-runner.ts      → output/css-cascade/results.json
- *   npm run test:calibration             → output/suite/calibration.json
+ * Optional, included only if present (each optional section is preserved verbatim from the
+ * last successful run if its source JSON is missing this time — it never regresses to a
+ * placeholder just because you forgot to re-run a maintainer tool):
+ *   npm run score:style-source  → output/benchmark/style-source/results-dom-docx-computed.json
+ *   npm run score:css-cascade   → output/css-cascade/results.json
+ *   npm run score:calibration   → output/suite/calibration.json
+ *   npm run guard:*             → output/guards/<id>.json (inline path, config options, computed
+ *                                 parity, browser bundle parity, pack smoke)
  *   internal/research/human-labels.json  (gitignored, maintainer-local blind ratings)
  *
  * Run: npm run docs:sync
  */
-import { access, readFile, writeFile } from "node:fs/promises";
+import { access, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -30,7 +34,8 @@ import type { BenchmarkResults } from "./benchmark-runner.js";
 import type { StyleSourceComparisonResults } from "./style-source-benchmark.js";
 import type { CssCascadeResults } from "./css-cascade-runner.js";
 import type { CalibrationResults } from "./calibration-runner.js";
-import { SUITE_OUTPUT, BENCHMARK_OUTPUT, CSS_CASCADE_OUTPUT } from "./output-paths.js";
+import type { GuardResult } from "./guard-result.js";
+import { SUITE_OUTPUT, BENCHMARK_OUTPUT, CSS_CASCADE_OUTPUT, GUARDS_OUTPUT } from "./output-paths.js";
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DOCS_DIR = path.join(REPO_ROOT, "docs");
@@ -50,9 +55,49 @@ function printPrerequisites(): void {
   console.log("docs:sync — regenerates docs/TEST-SCORES.md and docs/BENCHMARK.md");
   console.log("");
   console.log("Prerequisites (run first if the JSON below is missing or stale):");
-  console.log("  npm run test:suite       → output/suite/results.json");
-  console.log("  npm run test:benchmark   → output/benchmark/results-*.json");
+  console.log("  npm run score:suite       → output/suite/results.json");
+  console.log("  npm run score:benchmark   → output/benchmark/results-*.json");
   console.log("");
+  console.log("Optional (each section is preserved from the last run if its JSON is missing):");
+  console.log("  npm run score:style-source, npm run score:css-cascade, npm run score:calibration, npm run guard:*");
+  console.log("");
+}
+
+// ---------------------------------------------------------------------------
+// Section preservation — an optional section (style-source, CSS cascade, guard
+// status) whose source JSON is missing this run keeps whatever was generated
+// last time, instead of regressing to a "not yet generated" placeholder.
+// ---------------------------------------------------------------------------
+
+function sectionMarkers(id: string): { start: string; end: string } {
+  return { start: `<!-- SECTION:${id}:START -->`, end: `<!-- SECTION:${id}:END -->` };
+}
+
+function wrapSection(id: string, body: string): string {
+  const { start, end } = sectionMarkers(id);
+  return `${start}\n${body}\n${end}`;
+}
+
+function extractPreservedSection(oldContent: string | null, id: string): string | null {
+  if (!oldContent) return null;
+  const { start, end } = sectionMarkers(id);
+  const startIdx = oldContent.indexOf(start);
+  const endIdx = oldContent.indexOf(end);
+  if (startIdx === -1 || endIdx === -1 || endIdx < startIdx) return null;
+  return oldContent.slice(startIdx + start.length, endIdx).trim();
+}
+
+/** Fresh data wins; otherwise reuse last run's generated content; otherwise a placeholder. */
+function sectionOrPreserved(
+  oldContent: string | null,
+  id: string,
+  freshBody: string | null,
+  placeholderBody: string,
+): string {
+  if (freshBody !== null) return wrapSection(id, freshBody);
+  const preserved = extractPreservedSection(oldContent, id);
+  if (preserved !== null) return wrapSection(id, preserved);
+  return wrapSection(id, placeholderBody);
 }
 
 async function fileExists(filePath: string): Promise<boolean> {
@@ -118,6 +163,38 @@ function rollup(cases: CaseResult[]): SuiteRollup {
 }
 
 // ---------------------------------------------------------------------------
+// Guard status (guard:* scripts — binary pass/fail invariants)
+// ---------------------------------------------------------------------------
+
+async function loadGuardResults(): Promise<GuardResult[]> {
+  let entries: string[];
+  try {
+    entries = await readdir(GUARDS_OUTPUT);
+  } catch {
+    return [];
+  }
+  const results: GuardResult[] = [];
+  for (const entry of entries.filter((e) => e.endsWith(".json")).sort()) {
+    const result = await readJson<GuardResult>(path.join(GUARDS_OUTPUT, entry));
+    if (result) results.push(result);
+  }
+  return results;
+}
+
+function buildGuardTable(guards: GuardResult[]): string | null {
+  if (guards.length === 0) return null;
+  const rows = guards.map((g) => {
+    const status = g.ok ? "✅" : "❌";
+    return `| ${g.label} | ${status} | ${g.passed}/${g.total} ${g.unit} | \`${g.command}\` |`;
+  });
+  return [
+    "| Guard | Status | Result | Command |",
+    "|-------|:------:|--------|---------|",
+    ...rows,
+  ].join("\n");
+}
+
+// ---------------------------------------------------------------------------
 // TEST-SCORES.md
 // ---------------------------------------------------------------------------
 
@@ -149,7 +226,7 @@ async function buildTestScoresMd(suiteResults: LoopResults): Promise<string> {
   const calibration = await readJson<CalibrationResults>(CALIBRATION_PATH);
   const calibrationRow = calibration
     ? `| Identity-pair calibration (full ${calibration.cases.length}) | — | — | **mean ${fmtPct(calibration.meanAdjustedCeiling)} / min ${fmtPct(calibration.minAdjustedCeiling)}** |`
-    : null;
+    : `| Identity-pair calibration | — | — | _run \`npm run score:calibration\` for this row_ |`;
 
   const humanLabels = await readJson<{ labels: Record<string, { rating?: number; note?: string }> }>(
     HUMAN_LABELS_PATH,
@@ -177,7 +254,7 @@ async function buildTestScoresMd(suiteResults: LoopResults): Promise<string> {
 
 ${GENERATED_NOTICE}
 
-To generate suite metrics, run \`npm run test:suite\` then \`npm run docs:sync\`. **How scores are computed:** [SCORING.md](./SCORING.md).
+To generate suite metrics, run \`npm run score:suite\` then \`npm run docs:sync\`. **How scores are computed:** [SCORING.md](./SCORING.md).
 
 Last regenerated from a suite run at **${suiteResults.runAt}** (mode: ${suiteResults.mode}).
 
@@ -191,7 +268,7 @@ Last regenerated from a suite run at **${suiteResults.runAt}** (mode: ${suiteRes
 | Avg pixel match (tripwire, unscored) | ${fmtPct(standardRollup.pixelMatch)} | ${fmtPct(edgeRollup.pixelMatch)} | **${fmtPct(allRollup.pixelMatch)}** |
 | Avg engine score | ${fmtScore(standardRollup.engine)} | ${fmtScore(edgeRollup.engine)} | **${fmtScore(allRollup.engine)}** |
 | Avg compile | — | — | **${fmtMs(allRollup.avgPerformanceMs)}** |
-${calibrationRow ?? "| Identity-pair calibration | — | — | _run `npm run test:calibration` for this row_ |"}
+${calibrationRow}
 
 Tables below use the **layout-based visual** score; misaligned px is the raw pixel tripwire.
 
@@ -218,8 +295,8 @@ ${lowestRows.join("\n")}
 
 ## Related
 
-- **OSS comparison** — run \`npm run test:benchmark\` after a loop; see [BENCHMARK.md](./BENCHMARK.md)
-- **Regenerate** — \`npm run test:suite\` (full) or \`npm run test:suite:priority\` (10-case subset), then \`npm run docs:sync\`
+- **OSS comparison** — run \`npm run score:benchmark\` after a loop; see [BENCHMARK.md](./BENCHMARK.md)
+- **Regenerate** — \`npm run score:suite\` (full) or \`npm run score:suite:priority\` (10-case subset), then \`npm run docs:sync\`
 `;
 }
 
@@ -268,6 +345,7 @@ function listComparisonTable(
 async function buildBenchmarkMd(
   suiteResults: LoopResults,
   benchmarks: Array<{ id: string; label: string; payload: BenchmarkResults }>,
+  oldContent: string | null,
 ): Promise<string> {
   const domDocxSuite = suiteResults.suite;
   const caseCount = suiteResults.cases.length;
@@ -315,10 +393,8 @@ ${benchmarkCaseTable(payload.cases, label)}`,
   const listTable = listComparisonTable(suiteResults, benchmarks);
 
   const styleSource = await readJson<StyleSourceComparisonResults>(STYLE_SOURCE_PATH);
-  const styleSourceSection = styleSource
-    ? `## Style source: inline vs computed-oracle vs computed-native (dom-docx)
-
-Last regenerated from a run at **${styleSource.runAt}**.
+  const styleSourceFresh = styleSource
+    ? `Last regenerated from a run at **${styleSource.runAt}**.
 
 | Metric | inline | computed-oracle | computed-native |
 |--------|-------:|----------------:|----------------:|
@@ -326,32 +402,58 @@ Last regenerated from a run at **${styleSource.runAt}**.
 | Avg engine score | ${fmtScore(styleSource.inline.suite?.engine)} | ${fmtScore(styleSource.computed.suite.engine)} | ${fmtScore(styleSource.computedNative.suite.engine)} |
 | Avg compile | ${fmtMs(styleSource.inline.suite?.avgPerformanceMs)} | ${fmtMs(styleSource.comparisonNative.avgCompileMsOracle)} | ${fmtMs(styleSource.comparisonNative.avgCompileMsNative)} |
 
-Δ native − oracle (visual): ${fmtDelta(styleSource.comparisonNative.deltaVisualVsOracle)}. Regenerate: \`tsx tools/style-source-benchmark.ts\` (needs a fresh \`npm run test:suite\` baseline).`
-    : `## Style source: inline vs computed-oracle vs computed-native (dom-docx)
+Δ native − oracle (visual): ${fmtDelta(styleSource.comparisonNative.deltaVisualVsOracle)}. Regenerate: \`npm run score:style-source\` (needs a fresh \`npm run score:suite\` baseline).`
+    : null;
+  const styleSourceBody = sectionOrPreserved(
+    oldContent,
+    "style-source",
+    styleSourceFresh,
+    "Not yet generated. Regenerate: `npm run score:style-source` (needs a fresh `npm run score:suite` baseline first).",
+  );
+  const styleSourceSection = `## Style source: inline vs computed-oracle vs computed-native (dom-docx)
 
-Not yet generated in this run. Regenerate: \`tsx tools/style-source-benchmark.ts\` (needs a fresh \`npm run test:suite\` baseline first).`;
+${styleSourceBody}`;
 
   const cssCascade = await readJson<CssCascadeResults>(CSS_CASCADE_PATH);
-  const cssCascadeSection = cssCascade
-    ? `## CSS cascade suite (stylesheet / class selectors)
-
-Last regenerated from a run at **${cssCascade.runAt}**. Cases: \`tools/css-cascade-cases.ts\` · Output: \`output/css-cascade/results.json\`
+  const cssCascadeFresh = cssCascade
+    ? `Last regenerated from a run at **${cssCascade.runAt}**. Cases: \`tools/css-cascade-cases.ts\` · Output: \`output/css-cascade/results.json\`
 
 | Metric | inline | computed | Δ |
 |--------|-------:|---------:|--:|
 | Avg adjusted visual | ${fmtPct(cssCascade.suite.inline.visual)} | ${fmtPct(cssCascade.suite.computed.visual)} | **${fmtDelta(cssCascade.suite.deltaVisual)}** |
 | Cases passed | — | ${cssCascade.summary.passedCount} / ${cssCascade.summary.caseCount} | — |
 
-Regenerate: \`tsx tools/css-cascade-runner.ts\`.`
-    : `## CSS cascade suite (stylesheet / class selectors)
+Regenerate: \`npm run score:css-cascade\`.`
+    : null;
+  const cssCascadeBody = sectionOrPreserved(
+    oldContent,
+    "css-cascade",
+    cssCascadeFresh,
+    "Not yet generated. Regenerate: `npm run score:css-cascade`.",
+  );
+  const cssCascadeSection = `## CSS cascade suite (stylesheet / class selectors)
 
-Not yet generated in this run. Regenerate: \`tsx tools/css-cascade-runner.ts\`.`;
+${cssCascadeBody}`;
+
+  const guards = await loadGuardResults();
+  const guardFresh = buildGuardTable(guards);
+  const guardBody = sectionOrPreserved(
+    oldContent,
+    "guard-status",
+    guardFresh
+      ? `Last regenerated from whichever \`guard:*\` scripts have been run most recently (each guard's own \`ranAt\` is in \`output/guards/<id>.json\`).\n\n${guardFresh}`
+      : null,
+    "Not yet generated. Regenerate: `npm run guard:inline`, `npm run guard:config`, `npm run guard:computed-parity`, `npm run guard:browser-parity`, `npm run guard:pack-smoke`.",
+  );
+  const guardSection = `## Guard status
+
+${guardBody}`;
 
   return `# Benchmark: OSS HTML→DOCX vs dom-docx
 
 ${GENERATED_NOTICE}
 
-Generate via \`npm run test:suite && npm run test:benchmark && npm run docs:sync\`.
+Generate via \`npm run score:suite && npm run score:benchmark && npm run docs:sync\`.
 
 All libraries use the **same visual harness**: human-validated layout fidelity plus content-quality guards (legibility, background balance, list marker fidelity, text content fidelity). List marker checks run only when HTML contains \`<ol>\`/\`<ul>\`. Raw pixel match is recorded per case as a regression tripwire but contributes to no score. See [SCORING.md](./SCORING.md).
 
@@ -386,33 +488,42 @@ ${cssCascadeSection}
 
 ---
 
+${guardSection}
+
+---
+
 ## Commands
 
 \`\`\`bash
-npm run test:suite                  # refresh dom-docx baseline (run before benchmark)
-npm run test:benchmark              # all OSS libraries
-npm run test:benchmark -- turbodocx
-npm run test:benchmark -- html-to-docx
-npm run docs:sync                   # regenerate this file + TEST-SCORES.md
-npm run test:inline-guard           # assert inline default unchanged
+npm run score:suite                  # refresh dom-docx baseline (run before benchmark)
+npm run score:benchmark              # all OSS libraries
+npm run score:benchmark -- turbodocx
+npm run score:benchmark -- html-to-docx
+npm run score:style-source           # inline vs computed-oracle vs computed-native
+npm run score:css-cascade            # stylesheet / class selector suite
+npm run docs:sync                    # regenerate this file + TEST-SCORES.md
+npm run guard:inline                 # assert inline default unchanged
+npm run guard:computed-parity        # oracle vs native byte-identical
+npm run guard:browser-parity         # browser bundle vs Node computed-native
 \`\`\`
 
-Style-source, CSS-cascade, and parity guards: [CONTRIBUTING.md](../CONTRIBUTING.md#maintainer-only-harness-commands).
+Full command groupings (score / guard / research / showcase): [CONTRIBUTING.md](../CONTRIBUTING.md#test-and-score-commands).
 
 ## Artifacts
 
 \`\`\`
 output/
-  suite/                       # test:suite — standard baseline + edge cases
-  benchmark/                   # test:benchmark, style-source
+  suite/                       # score:suite — standard baseline + edge cases
+  benchmark/                   # score:benchmark, style-source
     results.json
     results-html-to-docx.json
     results-turbodocx.json
     html-to-docx/{name}/
     turbodocx/{name}/
     style-source/
-  showcase/                    # test:showcase scratch (committed copies in examples/)
-  css-cascade/                 # tsx tools/css-cascade-runner.ts
+  showcase/                    # showcase scratch (committed copies in examples/)
+  css-cascade/                 # score:css-cascade
+  guards/                      # guard:* results (one JSON per guard)
 \`\`\`
 
 Adapters: \`tools/benchmark/html-to-docx-adapter.ts\`, \`tools/benchmark/turbodocx-adapter.ts\` · Style source: \`tools/style-source-benchmark.ts\`
@@ -443,7 +554,7 @@ function checkStaleness(
     const comparedAgainst = payload.comparison.domDocxRunAt;
     if (!comparedAgainst) {
       warnings.push(
-        `${label}'s benchmark run has no dom-docx baseline recorded — its comparison columns will be blank. Run npm run test:suite first, then re-run npm run test:benchmark.`,
+        `${label}'s benchmark run has no dom-docx baseline recorded — its comparison columns will be blank. Run npm run score:suite first, then re-run npm run score:benchmark.`,
       );
       continue;
     }
@@ -452,7 +563,7 @@ function checkStaleness(
       const gap = suiteTime - comparedTime;
       const newer = gap > 0 ? "dom-docx suite" : label;
       warnings.push(
-        `${label}'s benchmark was compared against a dom-docx baseline from ${comparedAgainst}, but the current suite results are from ${suiteResults.runAt} (${humanAge(gap)} ${newer} is newer). Re-run npm run test:benchmark to refresh the comparison.`,
+        `${label}'s benchmark was compared against a dom-docx baseline from ${comparedAgainst}, but the current suite results are from ${suiteResults.runAt} (${humanAge(gap)} ${newer} is newer). Re-run npm run score:benchmark to refresh the comparison.`,
       );
     } else if (Math.abs(suiteTime - new Date(payload.runAt).getTime()) > STALE_THRESHOLD_MS) {
       warnings.push(
@@ -473,7 +584,7 @@ async function main(): Promise<void> {
 
   const suiteResults = await readJson<LoopResults>(SUITE_RESULTS_PATH);
   if (!suiteResults) {
-    console.error(`Missing ${path.relative(REPO_ROOT, SUITE_RESULTS_PATH)} — run npm run test:suite first.`);
+    console.error(`Missing ${path.relative(REPO_ROOT, SUITE_RESULTS_PATH)} — run npm run score:suite first.`);
     process.exitCode = 1;
     return;
   }
@@ -496,14 +607,14 @@ async function main(): Promise<void> {
       benchmarks.push({ id: lib.id, label: payload.library.npm, payload });
     } else {
       console.warn(
-        `Warning: no benchmark results for "${lib.id}" (${path.relative(REPO_ROOT, resultsPath)} not found) — it will be missing from BENCHMARK.md. Run npm run test:benchmark.`,
+        `Warning: no benchmark results for "${lib.id}" (${path.relative(REPO_ROOT, resultsPath)} not found) — it will be missing from BENCHMARK.md. Run npm run score:benchmark.`,
       );
     }
   }
 
   if (benchmarks.length === 0) {
     console.error(
-      `No benchmark results found under ${path.relative(REPO_ROOT, BENCHMARK_OUTPUT)} — skipping BENCHMARK.md. Run npm run test:benchmark first.`,
+      `No benchmark results found under ${path.relative(REPO_ROOT, BENCHMARK_OUTPUT)} — skipping BENCHMARK.md. Run npm run score:benchmark first.`,
     );
     process.exitCode = 1;
     return;
@@ -516,7 +627,14 @@ async function main(): Promise<void> {
     console.warn("");
   }
 
-  await writeFile(BENCHMARK_PATH, await buildBenchmarkMd(suiteResults, benchmarks), "utf-8");
+  const oldBenchmarkContent = (await fileExists(BENCHMARK_PATH))
+    ? await readFile(BENCHMARK_PATH, "utf-8")
+    : null;
+  await writeFile(
+    BENCHMARK_PATH,
+    await buildBenchmarkMd(suiteResults, benchmarks, oldBenchmarkContent),
+    "utf-8",
+  );
   console.log(`Wrote ${path.relative(REPO_ROOT, BENCHMARK_PATH)}`);
 }
 

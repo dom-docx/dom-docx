@@ -1,15 +1,36 @@
 #!/usr/bin/env node
 /**
  * Verify the npm tarball installs and converts without Playwright.
- * Run from repo root: npm run test:pack-smoke
+ * Run from repo root: npm run guard:pack-smoke
  */
 import { execSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdir, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+
+/** Mirrors tools/guard-result.ts's shape; duplicated here since this script runs via
+ * plain `node`, not `tsx`, and can't import a .ts module directly. */
+async function writeGuardResult(ok, detail) {
+  const guardsDir = path.join(root, "output", "guards");
+  await new Promise((resolve, reject) =>
+    mkdir(guardsDir, { recursive: true }, (err) => (err ? reject(err) : resolve())),
+  );
+  const payload = {
+    id: "pack-smoke",
+    label: "Pack smoke",
+    passed: ok ? 1 : 0,
+    total: 1,
+    ok,
+    unit: detail,
+    ranAt: new Date().toISOString(),
+    command: "npm run guard:pack-smoke",
+  };
+  await writeFile(path.join(guardsDir, "pack-smoke.json"), `${JSON.stringify(payload, null, 2)}\n`, "utf-8");
+}
 const packLines = execSync("npm pack --silent", { cwd: root, encoding: "utf-8" })
   .trim()
   .split("\n")
@@ -102,6 +123,10 @@ try {
   execSync("node browser-smoke.mjs", { cwd: work, stdio: "inherit" });
 
   console.log("pack-smoke: passed (library + CLI + browser entry)");
+  await writeGuardResult(true, "library + CLI + browser entry install and convert");
+} catch (err) {
+  await writeGuardResult(false, err instanceof Error ? err.message : String(err));
+  throw err;
 } finally {
   rmSync(work, { recursive: true, force: true });
   rmSync(tgz, { force: true });

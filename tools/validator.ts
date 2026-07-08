@@ -260,7 +260,7 @@ function printScorecard(results: CaseResult[], suite: SuiteRollup, mode: LoopCas
   console.log(`\n${line}`);
   console.log("  HTML → DOCX Validation Loop — Engine Scorecard");
   if (mode === "priority") {
-    console.log(`  Mode: priority (${results.length}/${total} cases) — run npm run test:suite for full suite`);
+    console.log(`  Mode: priority (${results.length}/${total} cases) — run npm run score:suite for full suite`);
   }
   console.log(line);
   console.log(

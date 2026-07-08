@@ -32,7 +32,7 @@ Engine Score = (Visual × 0.50) + (Editability × 0.35) + (Performance × 0.15)
 
 ## Visual match
 
-**Script:** `npm run test:suite` → `tools/validator.ts`  
+**Script:** `npm run score:suite` → `tools/validator.ts`  
 **Modules:** `tools/visual-compare.ts`, `tools/legibility.ts`, `tools/background-balance.ts`, `tools/list-marker-fidelity.ts`, `tools/text-content-fidelity.ts`
 
 1. Wrap test HTML and screenshot with Playwright (`target_html.png`)
@@ -91,11 +91,11 @@ HTML display text for fidelity uses `htmlFragmentDisplayText()` (synthesizes `1.
 
 ### Calibration (pipeline-noise check)
 
-`npm run test:calibration` pushes the **same HTML** through both pipeline sides (Chromium screenshot vs Chromium-printed PDF → pdf-to-img → same scorer) with **no conversion involved**, so any deficit is pipeline noise, not conversion error. Under layout-based scoring a perfect render scores ~100 here (that was the point of the switch); the run also reports the **pixel tripwire's** identity-pair ceiling (~94–99% depending on content, mean ~97.5), which is what "no pixel regression" should be read against. A *guard* firing during calibration flags a heuristic false positive on that case, not a conversion defect.
+`npm run score:calibration` pushes the **same HTML** through both pipeline sides (Chromium screenshot vs Chromium-printed PDF → pdf-to-img → same scorer) with **no conversion involved**, so any deficit is pipeline noise, not conversion error. Under layout-based scoring a perfect render scores ~100 here (that was the point of the switch); the run also reports the **pixel tripwire's** identity-pair ceiling (~94–99% depending on content, mean ~97.5), which is what "no pixel regression" should be read against. A *guard* firing during calibration flags a heuristic false positive on that case, not a conversion defect.
 
 ### Word render spot check
 
-The loop scores against LibreOffice, but the real consumer is Microsoft Word — and the two disagree (LO ignores EXACT `w:line` in table rows, treats exact `trHeight` as a minimum). `tsx tools/word-spotcheck.ts` renders 5 anchor cases through **both** renderers and reports the adjusted-visual delta (`output/suite/word-spotcheck.json`), quantifying how much of the metric is LibreOffice-specific. Requires Word on macOS; skips cleanly when unavailable.
+The loop scores against LibreOffice, but the real consumer is Microsoft Word — and the two disagree (LO ignores EXACT `w:line` in table rows, treats exact `trHeight` as a minimum). `npm run research:word-spotcheck` renders 5 anchor cases through **both** renderers and reports the adjusted-visual delta (`output/suite/word-spotcheck.json`), quantifying how much of the metric is LibreOffice-specific. Requires Word on macOS; skips cleanly when unavailable.
 
 ---
 
@@ -134,7 +134,7 @@ Linear interpolation between anchors; clamp to `[0, 100]`.
 
 ## Autonomous development loop
 
-Each `npm run test:suite` run writes **`output/suite/results.json`** — the machine-readable objective for agents and CI:
+Each `npm run score:suite` run writes **`output/suite/results.json`** — the machine-readable objective for agents and CI:
 
 ```json
 {
@@ -157,19 +157,19 @@ Each `npm run test:suite` run writes **`output/suite/results.json`** — the mac
 | Step | Action |
 |------|--------|
 | **Hypothesis** | Propose a converter change (e.g. list spacing tweak) |
-| **Experiment** | Apply patch, run `npm run test:suite` |
+| **Experiment** | Apply patch, run `npm run score:suite` |
 | **Measure** | Read `results.json` → compare `objective`, `visualScore` vs `matchPercent`, and subscores |
 | **Synthesize** | Keep change if `objective` ↑; inspect `diff_*.png` for visual regressions |
 | **Next** | Iterate on lowest-scoring cases (`cases[].engineScore`) |
 
 **Exit codes:** `0` = loop completed (metrics recorded). `1` = XML failure or runtime error.  
-Use `npm run test:suite:strict` for zero-tolerance pixel CI (`--strict-visual`).
+Use `npm run score:suite:strict` for zero-tolerance pixel CI (`--strict-visual`).
 
 ---
 
 ## OSS benchmark (same harness)
 
-After `npm run test:suite`, run `npm run test:benchmark` to score **html-to-docx** and **@turbodocx/html-to-docx** through the same pipeline. See [BENCHMARK.md](./BENCHMARK.md).
+After `npm run score:suite`, run `npm run score:benchmark` to score **html-to-docx** and **@turbodocx/html-to-docx** through the same pipeline. See [BENCHMARK.md](./BENCHMARK.md).
 
 ---
 
@@ -187,11 +187,16 @@ Raw pixel match can look good while list numbers, missing text, or background bl
 
 | Command | Purpose |
 |---------|---------|
-| `npm run test:suite` | Full regression suite (33 cases) |
-| `npm run test:suite:priority` | Fast subset (10 cases) |
-| `npm run test:calibration` | Score-ceiling calibration (no conversion); add `-- --full` for all cases |
-| `npm run test:benchmark` | OSS html-to-docx / TurboDocx comparison |
-| `npm run test:inline-guard` | Assert inline path OOXML unchanged |
-| `npm run test:config` | ConvertOptions OOXML assertions |
+| `npm run score:suite` | Full regression suite (cases: `tools/generator.ts`) |
+| `npm run score:suite:priority` | Fast subset of the same cases |
+| `npm run score:calibration` | Score-ceiling calibration (no conversion); add `-- --full` for all cases |
+| `npm run score:benchmark` | OSS html-to-docx / TurboDocx comparison |
+| `npm run score:style-source` | inline vs computed-oracle vs computed-native comparison |
+| `npm run score:css-cascade` | Stylesheet / class selector suite |
+| `npm run guard:inline` | Assert inline path OOXML unchanged |
+| `npm run guard:config` | ConvertOptions OOXML assertions |
+| `npm run guard:computed-parity` | Assert computed-oracle/native byte-identical output |
+| `npm run guard:browser-parity` | Assert browser bundle matches Node computed-native |
+| `npm run guard:pack-smoke` | Verify the npm tarball installs without Playwright |
 
-Maintainer-only (see [CONTRIBUTING.md](../CONTRIBUTING.md)): `tsx tools/word-spotcheck.ts`, `tsx tools/multipage-test.ts`, `tsx tools/novel-runner.ts`.
+Full command groupings (score / guard / research / showcase): [CONTRIBUTING.md](../CONTRIBUTING.md#test-and-score-commands). Maintainer research tools (validate the metric itself, not the converter): `npm run research:word-spotcheck`, `npm run research:multipage`, `npm run research:novel`, `npm run research:wild`, `npm run research:label`, `npm run research:concordance`.

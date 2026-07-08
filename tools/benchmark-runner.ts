@@ -299,7 +299,7 @@ function printBenchmarkReport(
       console.log(`    dom-docx baseline from: ${domDocxRunAt}`);
     }
   } else {
-    console.log("    dom-docx baseline: not found — run npm run test:suite first for comparison");
+    console.log("    dom-docx baseline: not found — run npm run score:suite first for comparison");
   }
 
   console.log(`\n  Per-case (visual % · engine score · Δ visual vs dom-docx)`);

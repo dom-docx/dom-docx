@@ -2,7 +2,7 @@
 
 Nine real-world HTML documents designed to **convert cleanly to DOCX**: financial statements, invoices, balance sheets, contracts, product briefs, sales dashboards, sprint retrospectives, and a React-rendered dashboard.
 
-These are **not** part of the regression loop (`npm run test:suite`). Run them separately to preview conversion quality on richer, portable content without slowing iteration.
+These are **not** part of the regression loop (`npm run score:suite`). Run them separately to preview conversion quality on richer, portable content without slowing iteration.
 
 **Committed artifacts** live in [`examples/`](../examples/) (`input.html`, `output.docx`, `compare_side_by_side.png`). The harness writes additional scratch files to gitignored `output/showcase/`.
 
@@ -11,7 +11,7 @@ Stress patterns removed from earlier showcase drafts (inline SVG, CSS bar divs i
 ## Run
 
 ```bash
-npm run test:showcase      # 9 showcases → examples/ + output/showcase/
+npm run showcase      # 9 showcases → examples/ + output/showcase/
 ```
 
 Requires LibreOffice (`soffice`) and Playwright Chromium (same as the main loop).

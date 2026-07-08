@@ -10,7 +10,7 @@ Each folder contains:
 | `output.docx` | Generated Word document |
 | `compare_side_by_side.png` | Chromium reference (left) vs LibreOffice-rendered DOCX (right) |
 
-Regenerate with `npm run test:showcase`. The runner refreshes these files automatically; full harness artifacts (PDFs, diffs, scores) stay in gitignored `output/showcase/`.
+Regenerate with `npm run showcase`. The runner refreshes these files automatically; full harness artifacts (PDFs, diffs, scores) stay in gitignored `output/showcase/`.
 
 ## Showcases
 

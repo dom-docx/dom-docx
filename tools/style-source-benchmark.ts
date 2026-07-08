@@ -319,7 +319,7 @@ function printComparisonReport(payload: StyleSourceComparisonResults): void {
   if (inlineRunAt) {
     console.log(`    inline baseline from: ${inlineRunAt}`);
   } else {
-    console.log("    inline baseline: not found — run npm run test:suite first");
+    console.log("    inline baseline: not found — run npm run score:suite first");
   }
 
   const regressions = enrichedCases.filter((c) => c.regression);

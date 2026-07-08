@@ -611,7 +611,7 @@ These match the harness wrapper (`wrapHtml()` in `src/html-wrap.ts`) that the co
 | **playwright** | For `styleSource: "computed"` and/or `rasterizeInPlace` (optional peer dependency, installed separately) | **Not used** |
 | **Live DOM** | Not required for inline path; computed/rasterize use Playwright | Required for computed and `rasterizeInPlace` |
 
-LibreOffice (`soffice`) is **not** required for conversion — only for the visual validation loop in `npm run test:suite`.
+LibreOffice (`soffice`) is **not** required for conversion — only for the visual validation loop in `npm run score:suite`.
 
 For the Node computed path, install Playwright plus Chromium yourself, once:
 
@@ -642,11 +642,11 @@ These exercise the API and write artifacts under `output/`:
 
 | Command | What it runs |
 |---------|----------------|
-| `npm run test:suite` | Full visual + XML regression suite (cases: `tools/generator.ts`; needs Chromium + LibreOffice) |
-| `npm run test:suite:priority` | Fast subset of the same cases |
-| `npm run test:inline-guard` | Asserts inline path OOXML equivalence (normalized XML) |
-| `npm run test:config` | `ConvertOptions` OOXML checks |
-| `npm run test:benchmark` | OSS html-to-docx / TurboDocx comparison |
+| `npm run score:suite` | Full visual + XML regression suite (cases: `tools/generator.ts`; needs Chromium + LibreOffice) |
+| `npm run score:suite:priority` | Fast subset of the same cases |
+| `npm run guard:inline` | Asserts inline path OOXML equivalence (normalized XML) |
+| `npm run guard:config` | `ConvertOptions` OOXML checks |
+| `npm run score:benchmark` | OSS html-to-docx / TurboDocx comparison |
 | `npm run build:browser` | esbuild → `dist/browser/dom-docx.browser.js` |
 | `npm run typecheck` | TypeScript compile check |
 

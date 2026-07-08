@@ -7,6 +7,7 @@ import { convertHtmlToDocx } from "../src/converter.js";
 import { wrapHtml } from "../src/html-wrap.js";
 import { VIEWPORT_HEIGHT_PX, VIEWPORT_WIDTH_PX } from "../src/converter/constants.js";
 import { generateTestCases, isCustomConvertCase } from "./generator.js";
+import { writeGuardResult } from "./guard-result.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -77,6 +78,15 @@ async function main(): Promise<void> {
         const diverging = firstDivergingPart(nodeBuf, browserBytes);
         if (diverging) {
           console.error(`browser-build parity mismatch: ${testCase.name} (${diverging})`);
+          await writeGuardResult({
+            id: "browser-build-parity",
+            label: "Browser bundle parity",
+            passed,
+            total: cases.length,
+            ok: false,
+            unit: "equivalent to Node computed-native",
+            command: "npm run guard:browser-parity",
+          });
           process.exitCode = 1;
           return;
         }
@@ -89,6 +99,15 @@ async function main(): Promise<void> {
     console.log(
       `browser-build parity: ${passed}/${cases.length} cases equivalent to Node computed-native`,
     );
+    await writeGuardResult({
+      id: "browser-build-parity",
+      label: "Browser bundle parity",
+      passed,
+      total: cases.length,
+      ok: true,
+      unit: "equivalent to Node computed-native",
+      command: "npm run guard:browser-parity",
+    });
   } finally {
     await browser.close();
   }

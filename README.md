@@ -242,7 +242,7 @@ dom-docx maps a practical HTML subset to native OOXML through a three-stage pipe
 
 Quality is driven by an autonomous loop rather than one-off visual checks:
 
-- **30+ regression cases** (defined in [`tools/generator.ts`](./tools/generator.ts), run via `npm run test:suite`): human-validated **layout fidelity**, plus guards for bad contrast, missing list markers, wrong text and imbalanced shaded blocks; raw pixel match is recorded as a regression tripwire
+- **30+ regression cases** (defined in [`tools/generator.ts`](./tools/generator.ts), run via `npm run score:suite`): human-validated **layout fidelity** (ink-projection structure comparison, 85.6% concordance with blind human quality ratings), plus guards for bad contrast, missing list markers, wrong text and imbalanced shaded blocks; raw pixel match is recorded as a regression tripwire
 - **Engine score**: 50% visual (layout-based) + 35% editability (native structure, not 1×1 layout tables) + 15% compile speed
 - **OSS benchmark**: same harness scores [html-to-docx](https://www.npmjs.com/package/html-to-docx) and [@turbodocx/html-to-docx](https://www.npmjs.com/package/@turbodocx/html-to-docx) for ongoing comparison ([BENCHMARK.md](./docs/BENCHMARK.md))
 
@@ -260,11 +260,11 @@ For contributors and harness runs (not required to use the library):
 git clone … && npm install && npm run setup
 npm run build              # dist/ for npm pack
 npm run typecheck
-npm run test:suite          # full visual + XML regression suite (cases: tools/generator.ts)
-npm run test:suite:priority # fast subset of the same cases
-# Run one case: SUITE_ONLY=rasterize-in-place-chart npm run test:suite
-npm run test:benchmark     # vs html-to-docx + TurboDocx
-npm run test:config        # ConvertOptions OOXML checks
+npm run score:suite          # full visual + XML regression suite (cases: tools/generator.ts)
+npm run score:suite:priority # fast subset of the same cases
+# Run one case: SUITE_ONLY=rasterize-in-place-chart npm run score:suite
+npm run score:benchmark     # vs html-to-docx + TurboDocx
+npm run guard:config        # ConvertOptions OOXML checks
 ```
 
 Prerequisites for the harness: **LibreOffice** (`soffice`) for PDF rasterization, **Playwright Chromium** (`npm run setup`).

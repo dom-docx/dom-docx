@@ -27,6 +27,6 @@ jobs:
       - run: npm run typecheck
       - run: npm run build
       - run: npm run build:browser
-      - run: npm run test:inline-guard
-      - run: npm run test:config
-      - run: npm run test:pack-smoke
+      - run: npm run guard:inline
+      - run: npm run guard:config
+      - run: npm run guard:pack-smoke
