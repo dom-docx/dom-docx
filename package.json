@@ -1,6 +1,6 @@
 {
   "name": "dom-docx",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Convert semantic HTML fragments to native, editable Word documents (OOXML)",
   "license": "MIT",
   "author": "Blair Googer",
@@ -61,7 +61,6 @@
     "setup": "playwright install chromium",
     "typecheck": "tsc --noEmit",
     "docs:sync": "tsx tools/docs-sync.ts",
-
     "score:suite": "tsx tools/validator.ts",
     "score:suite:priority": "tsx tools/validator.ts --priority",
     "score:suite:strict": "tsx tools/validator.ts --strict-visual",
@@ -69,14 +68,12 @@
     "score:style-source": "tsx tools/style-source-benchmark.ts",
     "score:css-cascade": "tsx tools/css-cascade-runner.ts",
     "score:calibration": "tsx tools/calibration-runner.ts",
-
     "guard:inline": "tsx tools/inline-path-guard.ts",
     "guard:config": "tsx tools/config-options-test.ts",
     "guard:computed-parity": "tsx tools/computed-parity-guard.ts",
     "guard:browser-parity": "npm run build:browser && tsx scripts/browser-spike.ts && tsx tools/browser-build-parity.ts",
     "guard:pack-smoke": "node scripts/pack-smoke.mjs",
     "guard:page-break": "tsx tools/page-break-test.ts",
-
     "research:wild": "tsx tools/wild-runner.ts",
     "research:wild-corpus": "tsx tools/wild-corpus-build.ts",
     "research:label": "tsx tools/label-renders.ts",
@@ -84,7 +81,6 @@
     "research:word-spotcheck": "tsx tools/word-spotcheck.ts",
     "research:multipage": "tsx tools/multipage-test.ts",
     "research:novel": "tsx tools/novel-runner.ts",
-
     "showcase": "tsx tools/showcase-runner.ts"
   },
   "engines": {
