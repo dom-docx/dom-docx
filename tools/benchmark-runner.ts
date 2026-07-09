@@ -20,7 +20,11 @@ import {
 import type { CaseResult } from "./validator.js";
 import { comparePngs } from "./visual-compare.js";
 import { extractPdfDisplayText } from "./pdf-text.js";
-import { htmlFragmentDisplayText } from "./text-content-fidelity.js";
+import {
+  htmlDisplayTextOptionsForConvertOptions,
+  htmlFragmentDisplayText,
+  type HtmlFragmentDisplayTextOptions,
+} from "./text-content-fidelity.js";
 import { BENCHMARK_OUTPUT, SUITE_OUTPUT } from "./output-paths.js";
 
 const OUTPUT_ROOT = BENCHMARK_OUTPUT;
@@ -89,12 +93,17 @@ function wrapHtml(fragment: string): string {
 </html>`;
 }
 
-async function captureHtmlPng(browser: Browser, html: string, outPath: string): Promise<string> {
+async function captureHtmlPng(
+  browser: Browser,
+  html: string,
+  outPath: string,
+  displayTextOptions?: HtmlFragmentDisplayTextOptions,
+): Promise<string> {
   const page = await browser.newPage({ viewport: VIEWPORT });
   try {
     await page.setContent(wrapHtml(html), { waitUntil: "networkidle" });
     await page.screenshot({ path: outPath, fullPage: false });
-    return htmlFragmentDisplayText(html);
+    return htmlFragmentDisplayText(html, displayTextOptions);
   } finally {
     await page.close();
   }
@@ -185,7 +194,12 @@ async function runBenchmarkCase(
   try {
     const wrapped = wrapHtml(testCase.html);
     await writeFile(htmlPath, wrapped, "utf-8");
-    const htmlDisplayText = await captureHtmlPng(browser, testCase.html, targetPng);
+    const htmlDisplayText = await captureHtmlPng(
+      browser,
+      testCase.html,
+      targetPng,
+      htmlDisplayTextOptionsForConvertOptions(testCase.convertOptions),
+    );
 
     const compileStart = performance.now();
     const docxBuffer = await library.convertHtmlFragment(testCase.html);

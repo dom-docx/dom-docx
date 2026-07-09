@@ -62,7 +62,7 @@ The scored visual signal starts with **layout fidelity** (`tools/layout-fidelity
 | **Legibility** | `legibility.ts` | Light text on dark fills with insufficient contrast (WCAG AA large-text threshold) |
 | **Background balance** | `background-balance.ts` | Shaded blocks taller/shorter than the HTML reference |
 | **List marker fidelity** | `list-marker-fidelity.ts` | Missing or wrong bullets/numbers on paired lines — **only when HTML contains `<ol>` or `<ul>`**; penalizes via the marker-ratio cap below, **not** via `applyQualityPenalties` (single penalty path — no double-counting) |
-| **Text content fidelity** | `text-content-fidelity.ts` | Missing/extra tokens vs expected HTML display text (condensed char-bag compare; table-aware spacing) |
+| **Text content fidelity** | `text-content-fidelity.ts` | Missing/extra tokens vs expected HTML display text (condensed char-bag compare; table-aware spacing). **Rasterized exports:** when a suite case uses `rasterizeInPlace`, text inside `<svg>` / `<canvas>` is omitted from the HTML oracle — those labels become image pixels and are not in the PDF text layer (layout fidelity still checks them visually). |
 
 When legibility / background balance / text content are below 100, the layout score is multiplied by a non-linear penalty (`applyQualityPenalties` in `background-balance.ts`):
 
@@ -78,7 +78,7 @@ visualScore = layoutFidelity.score * factor;
 - **PDF text corroboration:** if pixels miss markers but LibreOffice PDF text shows ordered numbers or bullet glyphs (`•`/`◦`), the cap is skipped (fixes false penalties when layout differs but content is correct). The corroborated value is recorded as `listMarkerEffectiveScore`.
 - **Diagnostics:** detected marker geometry (per-line `centerY`/`markerLeft`/`markerWidth`, matched DOCX line Ys, whether text rescue fired) is persisted as `listMarkerDetail` in `results.json` so score cliffs are diagnosable without re-running.
 
-HTML display text for fidelity uses `htmlFragmentDisplayText()` (synthesizes `1. …` for `<ol>`) because Playwright `innerText` omits list numbers.
+HTML display text for fidelity uses `htmlFragmentDisplayText()` (synthesizes `1. …` for `<ol>`) because Playwright `innerText` omits list numbers. Suite cases with `convertOptions.rasterizeInPlace` pass `excludeRasterizedMediaText: true` so chart labels inside rasterized `<svg>` / `<canvas>` are not expected as selectable PDF text.
 
 **Known limitations of the layout metric** TODO: Document current known limitations.
 

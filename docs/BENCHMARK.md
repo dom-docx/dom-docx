@@ -20,10 +20,10 @@ All libraries use the **same visual harness**: human-validated layout fidelity p
 | Metric | html-to-docx | @turbodocx/html-to-docx | dom-docx |
 |--------|---:|---:|---:|
 | XML schema pass | 0 / 36 | 0 / 36 | **36 / 36** |
-| Avg **visual (layout-based)** | 66.45% | 68.75% | **95.65%** |
+| Avg **visual (layout-based)** | 66.45% | 68.75% | **96.34%** |
 | Avg editability | 100.00 | 100.00 | 99.44 |
-| Avg engine score | 83.08 | 83.89 | **95.24** |
-| Avg compile | 12.5 ms | 15.8 ms | 43.4 ms |
+| Avg engine score | 83.08 | 83.89 | **95.85** |
+| Avg compile | 12.5 ms | 15.8 ms | 41.6 ms |
 
 Δ vs dom-docx (library − dom-docx):
 

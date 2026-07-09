@@ -25,7 +25,11 @@ import {
 import { comparePngs, composeSideBySidePng } from "./visual-compare.js";
 import { pdfToContentFlowPng } from "./pdf-raster.js";
 import { extractPdfDisplayText } from "./pdf-text.js";
-import { htmlFragmentDisplayText } from "./text-content-fidelity.js";
+import {
+  htmlDisplayTextOptionsForConvertOptions,
+  htmlFragmentDisplayText,
+  type HtmlFragmentDisplayTextOptions,
+} from "./text-content-fidelity.js";
 import type { ListMarkerFidelityDetail } from "./list-marker-fidelity.js";
 import { captureEnvironment, type HarnessEnvironment } from "./environment.js";
 import { SUITE_OUTPUT } from "./output-paths.js";
@@ -64,12 +68,17 @@ function wrapHtml(fragment: string): string {
 </html>`;
 }
 
-async function captureHtmlPng(browser: Browser, html: string, outPath: string): Promise<string> {
+async function captureHtmlPng(
+  browser: Browser,
+  html: string,
+  outPath: string,
+  displayTextOptions?: HtmlFragmentDisplayTextOptions,
+): Promise<string> {
   const page = await browser.newPage({ viewport: VIEWPORT });
   try {
     await page.setContent(wrapHtml(html), { waitUntil: "networkidle" });
     await page.screenshot({ path: outPath, fullPage: true });
-    return htmlFragmentDisplayText(html);
+    return htmlFragmentDisplayText(html, displayTextOptions);
   } finally {
     await page.close();
   }
@@ -165,7 +174,12 @@ async function runCase(testCase: TestCase, browser: Browser): Promise<CaseResult
 
   try {
     await writeFile(htmlPath, wrapHtml(testCase.html), "utf-8");
-    const htmlDisplayText = await captureHtmlPng(browser, testCase.html, targetPng);
+    const htmlDisplayText = await captureHtmlPng(
+      browser,
+      testCase.html,
+      targetPng,
+      htmlDisplayTextOptionsForConvertOptions(testCase.convertOptions),
+    );
 
     const compileStart = performance.now();
     const harnessOpts = resolveHarnessConvertOptions(testCase, browser);

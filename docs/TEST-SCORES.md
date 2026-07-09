@@ -6,15 +6,15 @@ To generate suite metrics, run `npm run score:suite` then `npm run docs:sync`. *
 
 ## Summary
 
-| Metric                               | Standard (17) | Edge (19) | All (36)                     |
-| ------------------------------------ | ------------- | --------- | ---------------------------- |
-| XML schema pass                      | 17 / 17       | 19 / 19   | **36 / 36**                  |
-| Avg **visual (layout-based)**        | 96.07%        | 95.27%    | **95.65%**                   |
-| Avg raw layout (pre-guards)          | 96.07%        | 96.58%    | **96.34%**                   |
-| Avg pixel match (tripwire, unscored) | 86.99%        | 93.91%    | **90.64%**                   |
-| Avg engine score                     | 95.16         | 95.31     | **95.24**                    |
-| Avg compile                          | —             | —         | **43.4 ms**                  |
-| Identity-pair calibration (full 36)  | —             | —         | **mean 96.34% / min 68.53%** |
+| Metric | Standard (17) | Edge (19) | All (36) |
+|--------|---------------|-----------|----------|
+| XML schema pass | 17 / 17 | 19 / 19 | **36 / 36** |
+| Avg **visual (layout-based)** | 96.07% | 96.58% | **96.34%** |
+| Avg raw layout (pre-guards) | 96.07% | 96.58% | **96.34%** |
+| Avg pixel match (tripwire, unscored) | 86.99% | 93.91% | **90.64%** |
+| Avg engine score | 95.75 | 95.94 | **95.85** |
+| Avg compile | — | — | **41.6 ms** |
+| Identity-pair calibration (full 36) | — | — | **mean 96.34% / min 68.53%** |
 
 Tables below use the **layout-based visual** score; misaligned px is the raw pixel tripwire.
 
@@ -22,66 +22,66 @@ Tables below use the **layout-based visual** score; misaligned px is the raw pix
 
 ## Standard baseline (17)
 
-| Test                        | Description                                            | XML | Visual | Misaligned px |
-| --------------------------- | ------------------------------------------------------ | --- | ------ | ------------- |
-| `plain-paragraph`           | Single unstyled `<p>`                                  | ✓   | 95.96% | 1,359         |
-| `multiple-paragraphs`       | Three sequential paragraphs                            | ✓   | 96.42% | 2,718         |
-| `heading-hierarchy`         | h1 / h2 / h3 with body text                            | ✓   | 96.51% | 4,973         |
-| `simple-unordered-list`     | Basic `<ul>` with 3 items                              | ✓   | 96.49% | 744           |
-| `simple-ordered-list`       | Basic `<ol>` with 3 items                              | ✓   | 96.34% | 1,595         |
-| `ordered-list-rich-inline`  | `<ol>` with `<strong>` + highlighted `<span>` per item | ✓   | 97.24% | 3,551         |
-| `paragraph-and-list`        | Intro paragraph + `<ul>`                               | ✓   | 96.20% | 1,236         |
-| `simple-link`               | One hyperlinked anchor                                 | ✓   | 96.05% | 1,214         |
-| `multiple-links`            | Two links in one sentence                              | ✓   | 95.80% | 1,278         |
-| `basic-inline-formatting`   | `<strong>`, `<em>`, nested bold-italic                 | ✓   | 96.33% | 1,417         |
-| `pre-code-block`            | Fenced `<pre><code>` + inline `<code>`                 | ✓   | 96.92% | 4,251         |
-| `simple-table-2x2`          | 2-column table, header + one row                       | ✓   | 95.82% | 597           |
-| `simple-table-3col`         | 3-column table, 3 rows                                 | ✓   | 96.21% | 1,047         |
-| `paragraph-with-line-break` | Address block with `<br>` tags                         | ✓   | 95.42% | 2,107         |
-| `simple-blockquote`         | Plain blockquote + paragraph                           | ✓   | 96.54% | 1,110         |
-| `centered-paragraph`        | `text-align: center`                                   | ✓   | 95.93% | 762           |
-| `horizontal-rule`           | Content separated by `<hr>`                            | ✓   | 93.08% | 2,475         |
+| Test | Description | XML | Visual | Misaligned px |
+|------|-------------|-----|--------|---------------|
+| `plain-paragraph` | Single unstyled `<p>` | ✓ | 95.96% | 1,359 |
+| `multiple-paragraphs` | Three sequential paragraphs | ✓ | 96.42% | 2,718 |
+| `heading-hierarchy` | h1 / h2 / h3 with body text | ✓ | 96.51% | 4,973 |
+| `simple-unordered-list` | Basic `<ul>` with 3 items | ✓ | 96.49% | 744 |
+| `simple-ordered-list` | Basic `<ol>` with 3 items | ✓ | 96.34% | 1,595 |
+| `ordered-list-rich-inline` | `<ol>` with `<strong>` + highlighted `<span>` per item | ✓ | 97.24% | 3,551 |
+| `paragraph-and-list` | Intro paragraph + `<ul>` | ✓ | 96.20% | 1,236 |
+| `simple-link` | One hyperlinked anchor | ✓ | 96.05% | 1,214 |
+| `multiple-links` | Two links in one sentence | ✓ | 95.80% | 1,278 |
+| `basic-inline-formatting` | `<strong>`, `<em>`, nested bold-italic | ✓ | 96.33% | 1,417 |
+| `pre-code-block` | Fenced `<pre><code>` + inline `<code>` | ✓ | 96.92% | 4,251 |
+| `simple-table-2x2` | 2-column table, header + one row | ✓ | 95.82% | 597 |
+| `simple-table-3col` | 3-column table, 3 rows | ✓ | 96.21% | 1,047 |
+| `paragraph-with-line-break` | Address block with `<br>` tags | ✓ | 95.42% | 2,107 |
+| `simple-blockquote` | Plain blockquote + paragraph | ✓ | 96.54% | 1,110 |
+| `centered-paragraph` | `text-align: center` | ✓ | 95.93% | 762 |
+| `horizontal-rule` | Content separated by `<hr>` | ✓ | 93.08% | 2,475 |
 
 ## Edge cases (19)
 
-| Test                       | Description                                                              | XML | Visual | Misaligned px |
-| -------------------------- | ------------------------------------------------------------------------ | --- | ------ | ------------- |
-| `typography-colors`        | Foreground/background colors, mixed inline & block                       | ✓   | 90.35% | 4,706         |
-| `table-mismatched-cells`   | Colspan, short rows, extra cells                                         | ✓   | 96.12% | 1,341         |
-| `borderless-table`         | Label/value table with `border:none`                                     | ✓   | 96.70% | 2,285         |
-| `table-row-backgrounds`    | Shaded `<tr>` bands                                                      | ✓   | 98.70% | 1,764         |
-| `nested-blockquotes-lists` | Nested quotes, `<ol>` inside `<ul>`                                      | ✓   | 91.00% | 3,664         |
-| `inline-vs-block`          | Spans, links, code, styled divs                                          | ✓   | 97.96% | 3,697         |
-| `inline-backgrounds`       | Multi-color inline highlights, bold in shaded span                       | ✓   | 96.95% | 2,992         |
-| `mixed-margins-paddings`   | Asymmetric margin/padding, bordered box                                  | ✓   | 94.76% | 5,415         |
-| `flex-row-horizontal`      | `display:flex; flex-direction:row` — three columns with gap              | ✓   | 96.79% | 2,884         |
-| `flex-column-vertical`     | `display:flex; flex-direction:column` — stacked rows with gap            | ✓   | 98.16% | 12,750        |
-| `inline-svg-chart`         | Inline SVG bar chart → native DOCX bands                                 | ✓   | 96.98% | 2,906         |
-| `rasterize-in-place-chart` | Complex SVG + canvas rasterized via `rasterizeInPlace` before conversion | ✓   | 73.99% | 6,752         |
-| `table-cell-bar-divs`      | CSS bar divs inside table cells                                          | ✓   | 98.67% | 5,857         |
-| `unicode-emoji-content`    | Emoji in body text                                                       | ✓   | 96.30% | 3,586         |
-| `image-block`              | `data:` URL `<img>` in a centered paragraph                              | ✓   | 98.54% | 1,417         |
-| `image-figure`             | `<figure>` → `<img>` + `<figcaption>`                                    | ✓   | 99.34% | 759           |
-| `ordered-list-lower-alpha` | `<ol list-style-type:lower-alpha>`                                       | ✓   | 96.45% | 1,946         |
-| `ordered-list-upper-roman` | `<ol list-style-type:upper-roman>`                                       | ✓   | 96.24% | 1,112         |
-| `unordered-list-square`    | `<ul list-style-type:square>`                                            | ✓   | 96.06% | 1,701         |
+| Test | Description | XML | Visual | Misaligned px |
+|------|-------------|-----|--------|---------------|
+| `typography-colors` | Foreground/background colors, mixed inline & block | ✓ | 90.35% | 4,706 |
+| `table-mismatched-cells` | Colspan, short rows, extra cells | ✓ | 96.12% | 1,341 |
+| `borderless-table` | Label/value table with `border:none` | ✓ | 96.70% | 2,285 |
+| `table-row-backgrounds` | Shaded `<tr>` bands | ✓ | 98.70% | 1,764 |
+| `nested-blockquotes-lists` | Nested quotes, `<ol>` inside `<ul>` | ✓ | 91.00% | 3,664 |
+| `inline-vs-block` | Spans, links, code, styled divs | ✓ | 97.96% | 3,697 |
+| `inline-backgrounds` | Multi-color inline highlights, bold in shaded span | ✓ | 96.95% | 2,992 |
+| `mixed-margins-paddings` | Asymmetric margin/padding, bordered box | ✓ | 94.76% | 5,415 |
+| `flex-row-horizontal` | `display:flex; flex-direction:row` — three columns with gap | ✓ | 96.79% | 2,884 |
+| `flex-column-vertical` | `display:flex; flex-direction:column` — stacked rows with gap | ✓ | 98.16% | 12,750 |
+| `inline-svg-chart` | Inline SVG bar chart → native DOCX bands | ✓ | 96.98% | 2,906 |
+| `rasterize-in-place-chart` | Complex SVG + canvas rasterized via `rasterizeInPlace` before conversion | ✓ | 98.91% | 6,752 |
+| `table-cell-bar-divs` | CSS bar divs inside table cells | ✓ | 98.67% | 5,857 |
+| `unicode-emoji-content` | Emoji in body text | ✓ | 96.30% | 3,586 |
+| `image-block` | `data:` URL `<img>` in a centered paragraph | ✓ | 98.54% | 1,417 |
+| `image-figure` | `<figure>` → `<img>` + `<figcaption>` | ✓ | 99.34% | 759 |
+| `ordered-list-lower-alpha` | `<ol list-style-type:lower-alpha>` | ✓ | 96.45% | 1,946 |
+| `ordered-list-upper-roman` | `<ol list-style-type:upper-roman>` | ✓ | 96.24% | 1,112 |
+| `unordered-list-square` | `<ul list-style-type:square>` | ✓ | 96.06% | 1,701 |
 
 ---
 
-## Lowest scores
+## Lowest scores (current priorities)
 
 Bottom 8 cases by layout-based visual score — human rating (1 = looks right, 2 = minor, 3 = broken) from `internal/research/human-labels.json`:
 
-| Test                        | Visual | Human | Notes                                                                    |
-| --------------------------- | -----: | :---: | ------------------------------------------------------------------------ |
-| `rasterize-in-place-chart`  | 73.99% |   1   | Complex SVG + canvas rasterized via `rasterizeInPlace` before conversion |
-| `typography-colors`         | 90.35% |   1   | Foreground/background colors, mixed inline & block                       |
-| `nested-blockquotes-lists`  | 91.00% |   1   |                                                                          |
-| `horizontal-rule`           | 93.08% |   1   | Minor vertical height issues                                             |
-| `mixed-margins-paddings`    | 94.76% |   2   | Not bad but the Nested margin box is lower than the source html          |
-| `paragraph-with-line-break` | 95.42% |   2   | Lines 2 and 3 are indented in docx, html is all left aligned             |
-| `multiple-links`            | 95.80% |   1   | Two links in one sentence                                                |
-| `simple-table-2x2`          | 95.82% |   1   | 2-column table, header + one row                                         |
+| Test | Visual | Human | Notes |
+|------|-------:|:-----:|-------|
+| `typography-colors` | 90.35% | 1 | Foreground/background colors, mixed inline & block |
+| `nested-blockquotes-lists` | 91.00% | 1 |  |
+| `horizontal-rule` | 93.08% | 1 | Minor vertical height issues |
+| `mixed-margins-paddings` | 94.76% | 2 | Not bad but the Nested margin box is lower than the source html |
+| `paragraph-with-line-break` | 95.42% | 2 | Lines 2 and 3 are indented in docx, html is all left aligned |
+| `multiple-links` | 95.80% | 1 | Two links in one sentence |
+| `simple-table-2x2` | 95.82% | 1 | 2-column table, header + one row |
+| `centered-paragraph` | 95.93% | 1 | `text-align: center` |
 
 ---
 

@@ -11,7 +11,10 @@ import { wrapHtml } from "../src/html-wrap.js";
 import { pdfFirstPageToPng } from "./pdf-raster.js";
 import { extractPdfDisplayText } from "./pdf-text.js";
 import { average } from "./scoring.js";
-import { htmlFragmentDisplayText } from "./text-content-fidelity.js";
+import {
+  htmlDisplayTextOptionsForConvertOptions,
+  htmlFragmentDisplayText,
+} from "./text-content-fidelity.js";
 import { comparePngs } from "./visual-compare.js";
 import { SUITE_OUTPUT } from "./output-paths.js";
 
@@ -103,7 +106,10 @@ async function runCase(testCase: TestCase, browser: Browser): Promise<SpotcheckC
   } finally {
     await page.close();
   }
-  const htmlDisplayText = htmlFragmentDisplayText(testCase.html);
+  const htmlDisplayText = htmlFragmentDisplayText(
+    testCase.html,
+    htmlDisplayTextOptionsForConvertOptions(testCase.convertOptions),
+  );
 
   const docxBuffer = await convertHtmlToDocx(testCase.html);
   await writeFile(docxPath, docxBuffer);

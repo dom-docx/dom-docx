@@ -164,8 +164,30 @@ function walkList($: CheerioAPI, list: Element, ordered: boolean, lines: string[
     });
 }
 
+export interface HtmlFragmentDisplayTextOptions {
+  /**
+   * Drop `<svg>` / `<canvas>` subtrees before extracting expected text.
+   * Use when the export path rasterizes chart media to PNG — axis labels and
+   * canvas-drawn text remain visible in the image but are not in the PDF text layer.
+   */
+  excludeRasterizedMediaText?: boolean;
+}
+
+/** HTML oracle options for suite cases with custom convert paths (e.g. `rasterizeInPlace`). */
+export function htmlDisplayTextOptionsForConvertOptions(
+  convertOptions?: { rasterizeInPlace?: boolean | object } | null,
+): HtmlFragmentDisplayTextOptions | undefined {
+  if (convertOptions?.rasterizeInPlace) {
+    return { excludeRasterizedMediaText: true };
+  }
+  return undefined;
+}
+
 /** Build display text with explicit `<ol>` markers — Playwright innerText omits list numbers. */
-export function htmlFragmentDisplayText(html: string): string {
+export function htmlFragmentDisplayText(
+  html: string,
+  options?: HtmlFragmentDisplayTextOptions,
+): string {
   const $ = cheerio.load(`<body>${html.trim()}</body>`, { xml: false });
 
   // Browsers don't display hidden subtrees (display:none, preheader idioms) —
@@ -173,6 +195,10 @@ export function htmlFragmentDisplayText(html: string): string {
   $("[style]").each((_, el) => {
     if (el.type === "tag" && isHiddenElement(el)) $(el).remove();
   });
+
+  if (options?.excludeRasterizedMediaText) {
+    $("svg, canvas").remove();
+  }
 
   const lines: string[] = [];
 
