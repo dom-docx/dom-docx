@@ -6,6 +6,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [0.1.5] - 2026-07-10
 
+### Added
+
+- **`coverHtml`** — HTML fragment rendered as a cover page: the first content in the document, before the table of contents, followed by an automatic page break. Inline styles + `data:` images (e.g. a logo); header/footer/page number are suppressed on the cover page, and headings inside the cover are not treated as TOC entries.
+
 ### Changed
 
 - **`tableOfContents` is now a clickable, page-number-less table of contents** (reworked from the page-numbered field shipped in 0.1.4). Each entry hyperlinks to a bookmark on its heading; page numbers are omitted — they depend on layout the library does not compute — so the entry list is **complete at creation**: correct in every viewer (Word, LibreOffice, Google Docs, PDF/preview) with **no field update and no "update fields" prompt**. Entries are styled as a document outline for readability — bold near-black top levels, lighter/greyer deeper levels, indent + spacing per level — rather than a wall of blue underlined links (they stay clickable). The field carries the `\n` switch so a reader who refreshes it still gets a number-less TOC, and heading styles keep their `w:outlineLvl` so that refresh rebuilds correctly in LibreOffice.

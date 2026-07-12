@@ -73,6 +73,15 @@ export interface DocumentConfig {
   /** Text direction; `"rtl"` sets right-to-left paragraphs. */
   direction?: "ltr" | "rtl";
   /**
+   * HTML fragment rendered as a cover page: the first content in the document,
+   * before the table of contents (if any), followed by an automatic page break so
+   * the TOC/body start on the next page. Uses the inline style path like
+   * `headerHtml`/`footerHtml` — inline `style="…"` and `data:` images (e.g. a logo)
+   * work. When a header/footer/page number is configured, it is suppressed on the
+   * cover page (Word "different first page").
+   */
+  coverHtml?: string;
+  /**
    * Insert a clickable, page-number-less Table of Contents at the top of the
    * document, built from the headings present (`h1`–`h6` become Word Heading 1–6).
    * Each entry is a hyperlink to its heading. Page numbers depend on layout, which
@@ -224,6 +233,19 @@ function buildTableOfContents(resolved: ResolvedConfig): FileChild[] {
   return blocks;
 }
 
+/**
+ * Cover fragment as the document's first content, followed by a page break so the
+ * TOC/body start on the next page. Converted via the inline style path (like
+ * header/footer). Returns `[]` when no `coverHtml` is configured.
+ */
+function buildCover(config: DocumentConfig | undefined, resolved: ResolvedConfig): FileChild[] {
+  if (!config?.coverHtml) return [];
+  return [
+    ...fragmentToBlocks(config.coverHtml, resolved.fontHalfPoints),
+    new Paragraph({ children: [new PageBreak()] }),
+  ];
+}
+
 function buildFooter(config: DocumentConfig | undefined, resolved: ResolvedConfig): Footer | undefined {
   const hasFooterHtml = Boolean(config?.footerHtml);
   if (!hasFooterHtml && !config?.pageNumber) return undefined;
@@ -243,8 +265,12 @@ async function packDocxToUint8Array(
   children: FileChild[],
   resolved: ResolvedConfig,
   chrome: { header?: Header; footer?: Footer },
+  coverBlocks: FileChild[],
 ): Promise<Uint8Array> {
   const listStyleRun = { font: resolved.font, size: resolved.fontHalfPoints };
+  // A cover page suppresses the header/footer/page-number on page 1 via Word's
+  // "different first page" (titlePg + empty first-page header/footer).
+  const suppressFirstChrome = coverBlocks.length > 0 && Boolean(chrome.header || chrome.footer);
   const doc = new Document({
     ...resolved.metadata,
     numbering: NUMBERING_CONFIG,
@@ -285,10 +311,15 @@ async function packDocxToUint8Array(
             size: resolved.size,
             margin: resolved.margin,
           },
+          ...(suppressFirstChrome ? { titlePage: true } : {}),
         },
-        ...(chrome.header ? { headers: { default: chrome.header } } : {}),
-        ...(chrome.footer ? { footers: { default: chrome.footer } } : {}),
-        children: [...buildTableOfContents(resolved), ...children],
+        ...(chrome.header
+          ? { headers: { default: chrome.header, ...(suppressFirstChrome ? { first: new Header({ children: [] }) } : {}) } }
+          : {}),
+        ...(chrome.footer
+          ? { footers: { default: chrome.footer, ...(suppressFirstChrome ? { first: new Footer({ children: [] }) } : {}) } }
+          : {}),
+        children: [...coverBlocks, ...buildTableOfContents(resolved), ...children],
       },
     ],
   });
@@ -334,7 +365,8 @@ export async function buildDocxUint8Array(
     header: buildHeader(documentConfig, resolved),
     footer: buildFooter(documentConfig, resolved),
   };
-  const packed = await packDocxToUint8Array(children, resolved, chrome);
+  const coverBlocks = buildCover(documentConfig, resolved);
+  const packed = await packDocxToUint8Array(children, resolved, chrome, coverBlocks);
   return patchPackedDocx(packed, tocPatchOptions(resolved));
 }
 

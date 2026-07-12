@@ -154,6 +154,17 @@ async function runSuite(): Promise<void> {
   const tocDoc = await part({ tableOfContents: true }, "word/document.xml");
   check("emits TOC field when enabled", /<w:instrText[^>]*>\s*TOC\b/.test(tocDoc));
   check("no TOC field when omitted", !/<w:instrText[^>]*>\s*TOC\b/.test(defDoc));
+
+  // ---- Tier 2: coverHtml ----
+  console.log("\ncoverHtml:");
+  const coverDoc = await part({ coverHtml: "<p>COVER MARKER</p>" }, "word/document.xml");
+  check("cover content present", coverDoc.includes("COVER MARKER"));
+  check("page break after cover", /<w:br w:type="page"\/>/.test(coverDoc));
+  check(
+    "cover precedes body",
+    coverDoc.indexOf("COVER MARKER") < coverDoc.indexOf("Config option test document"),
+  );
+  check("no cover content when omitted", !defDoc.includes("COVER MARKER"));
 }
 
 async function main(): Promise<void> {

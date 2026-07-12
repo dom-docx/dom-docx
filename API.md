@@ -186,6 +186,7 @@ interface DocumentConfig {
   pageNumber?: boolean;  // centered "Page N" field appended to the footer
   lang?: string;         // spell-check locale, e.g. "en-US", "ar-SA"
   direction?: "ltr" | "rtl";
+  coverHtml?: string;    // cover page: page 1, before the TOC, then a page break
   tableOfContents?: boolean | {
     title?: string;         // bold heading above the TOC, e.g. "Contents"
     headingRange?: string;  // Word heading levels to include, default "1-3"
@@ -207,6 +208,7 @@ interface DocumentConfig {
 | `pageNumber` | `boolean` | `false` | Appends a centered `Page N` field to the footer (creates one if `footerHtml` is absent). |
 | `lang` | `string` | — | Document spell-check locale (`w:lang`), e.g. `"en-US"`. |
 | `direction` | `"ltr" \| "rtl"` | `"ltr"` | `"rtl"` sets right-to-left runs (`w:rtl`) — e.g. Arabic/Hebrew. |
+| `coverHtml` | `string` | — | HTML fragment rendered as a **cover page**: the first content in the document, before the `tableOfContents` (if any), followed by an automatic page break so the TOC/body start on the next page. Uses the inline style path like `headerHtml`/`footerHtml` (inline `style=""` + `data:` images such as a logo). When a header/footer/`pageNumber` is set, it is suppressed on the cover page (Word "different first page"). Headings inside the cover are **not** included as TOC entries. |
 | `tableOfContents` | `boolean \| { title?, headingRange?, hyperlink?, pageBreakAfter? }` | — | Inserts a **clickable, page-number-less** Table of Contents at the top, built from the document's `h1`–`h6` (mapped to Word Heading 1–6). Each entry is a hyperlink to a bookmark on its heading. Because there are no page numbers (which would require layout), the entry list is **complete at creation** — it renders correctly in every viewer (Word, LibreOffice, Google Docs, PDF/preview) with no field update and no "update fields" prompt. `headingRange` defaults to `"1-3"`; `hyperlink` (the clickable links) to `true` — set it `false` for a plain-text list. |
 | `imageResolver` | `ImageResolver` | — | Resolve non-`data:` `<img src>`. See [Images](#images--the-resolver-hook). |
 | `browser` | Playwright `Browser` | — | **Node only.** Reuse an already-launched browser across many conversions. |

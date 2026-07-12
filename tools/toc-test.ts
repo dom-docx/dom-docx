@@ -168,7 +168,36 @@ async function main(): Promise<void> {
   check('Heading1 style has outlineLvl "0"', /<w:outlineLvl w:val="0"\/>/.test(styleDef(full.styles, "Heading1")));
   check('Heading2 style has outlineLvl "1"', /<w:outlineLvl w:val="1"\/>/.test(styleDef(full.styles, "Heading2")));
 
-  // ---- OOXML schema validity of a TOC document ----
+  // ---- Cover page > TOC > content ordering ----
+  console.log("\ncoverHtml + tableOfContents (Cover > TOC > Content):");
+  const cover = await build({
+    coverHtml: "<h1>Report Cover Title</h1><p>Subtitle</p>",
+    tableOfContents: true,
+    headerHtml: "<p>CONFIDENTIAL</p>",
+    pageNumber: true,
+  });
+  const cDoc = cover.doc;
+  const iCoverText = cDoc.indexOf("Report Cover Title");
+  const iCoverBreak = cDoc.indexOf('<w:br w:type="page"/>');
+  const iTocField = cDoc.indexOf("<w:sdt>");
+  const iTocEnd = cDoc.indexOf("</w:sdt>") + "</w:sdt>".length;
+  const iBodyHeading = cDoc.indexOf("Introduction", iTocEnd); // real body heading, after the field
+  check(
+    "order: cover < page break < TOC field < body",
+    iCoverText >= 0 && iCoverText < iCoverBreak && iCoverBreak < iTocField && iTocEnd < iBodyHeading,
+  );
+  check(
+    "cover heading is NOT a TOC entry",
+    !cDoc.slice(iTocField, iTocEnd).includes("Report Cover Title"),
+  );
+  check(
+    "body headings ARE TOC entries",
+    cDoc.slice(iTocField, iTocEnd).includes("Introduction"),
+  );
+  check("header/footer suppressed on cover page (titlePg)", /<w:titlePg\s*\/>/.test(cDoc));
+  check("empty first-page header referenced", /w:type="first"/.test(cDoc));
+
+  // ---- OOXML schema validity ----
   console.log("\nOOXML schema:");
   const docxPath = path.join(OUT_DIR, "output.docx");
   await writeFile(docxPath, on.buf);
@@ -178,6 +207,15 @@ async function main(): Promise<void> {
     "TOC document is schema-valid",
     validation.ok,
     validation.errors.slice(0, 2).map((e) => e.description).join("; "),
+  );
+
+  const coverPath = path.join(OUT_DIR, "cover-toc.docx");
+  await writeFile(coverPath, cover.buf);
+  const coverValidation = await validateFile(coverPath, { officeVersion: "Office2019" });
+  check(
+    "cover + TOC document is schema-valid",
+    coverValidation.ok,
+    coverValidation.errors.slice(0, 2).map((e) => e.description).join("; "),
   );
 
   const ok = failures === 0;

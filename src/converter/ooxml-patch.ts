@@ -154,8 +154,15 @@ export function patchTableOfContents(
   const entries: { level: number; text: string; anchor: string }[] = [];
   let seq = 0;
 
+  // A TOC lists the content that FOLLOWS it. Content before the field — a cover
+  // page — is not part of the TOC, so only scan headings after the field ends.
+  const fieldEnd = documentXml.indexOf("</w:sdt>");
+  const splitAt = fieldEnd >= 0 ? fieldEnd + "</w:sdt>".length : 0;
+  const beforeBody = documentXml.slice(0, splitAt);
+  const body = documentXml.slice(splitAt);
+
   // 1. Bookmark each in-range, non-empty heading; collect its text + anchor in order.
-  const withBookmarks = documentXml.replace(/<w:p\b[^>]*>[\s\S]*?<\/w:p>/g, (para) => {
+  const bodyWithBookmarks = body.replace(/<w:p\b[^>]*>[\s\S]*?<\/w:p>/g, (para) => {
     const styled = para.match(/<w:pStyle w:val="Heading([1-6])"\s*\/>/);
     if (!styled) return para;
     const level = Number(styled[1]);
@@ -177,6 +184,7 @@ export function patchTableOfContents(
     return opened.replace(/<\/w:p>$/, `${end}</w:p>`);
   });
 
+  const withBookmarks = beforeBody + bodyWithBookmarks;
   if (!entries.length) return withBookmarks;
 
   // 2. Build one styled entry paragraph per heading. A page-number-less TOC has no

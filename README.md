@@ -148,6 +148,7 @@ const docx = await convertHtmlToDocx(html, {
   pageNumber: true,
   lang: "en-US",
   direction: "ltr",
+  coverHtml: "<h1 style='text-align:center'>Quarterly Review</h1>", // page 1, before the TOC
   tableOfContents: { title: "Contents", pageBreakAfter: true }, // or just `true`
 });
 ```
@@ -169,6 +170,7 @@ const docx = await convertHtmlToDocx(html, {
 | `headerHtml` / `footerHtml` | —             | HTML fragments for page header/footer.                                                                                                                                                                           |
 | `pageNumber`                | `false`       | Appends centered `Page N` field to footer.                                                                                                                                                                       |
 | `lang` / `direction`        | —             | Spell-check locale; `"rtl"` for right-to-left.                                                                                                                                                                   |
+| `coverHtml`                 | —             | HTML fragment rendered as a cover page — the first content, before the TOC, followed by an automatic page break. Inline styles + `data:` images (e.g. a logo). Header/footer/page number are suppressed on the cover page. |
 | `tableOfContents`           | —             | `true` or `{ title?, headingRange?, hyperlink?, pageBreakAfter? }`. Inserts a **clickable, page-number-less** table of contents built from the `h1`–`h6` in the document — each entry links to its heading. It's complete at creation (no page numbers to compute), so it's correct in every viewer with no field update and no "update fields" prompt. |
 
 ### Images
