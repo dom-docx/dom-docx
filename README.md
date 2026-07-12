@@ -169,7 +169,7 @@ const docx = await convertHtmlToDocx(html, {
 | `headerHtml` / `footerHtml` | —             | HTML fragments for page header/footer.                                                                                                                                                                           |
 | `pageNumber`                | `false`       | Appends centered `Page N` field to footer.                                                                                                                                                                       |
 | `lang` / `direction`        | —             | Spell-check locale; `"rtl"` for right-to-left.                                                                                                                                                                   |
-| `tableOfContents`           | —             | `true` or `{ title?, headingRange?, hyperlink?, pageBreakAfter? }`. Inserts a TOC field built from the `h1`–`h6` in the document. Heading titles are cached so the TOC shows immediately in any viewer; page numbers fill in on field update (automatic in Word, right-click → Update elsewhere). |
+| `tableOfContents`           | —             | `true` or `{ title?, headingRange?, hyperlink?, pageBreakAfter? }`. Inserts a **clickable, page-number-less** table of contents built from the `h1`–`h6` in the document — each entry links to its heading. It's complete at creation (no page numbers to compute), so it's correct in every viewer with no field update and no "update fields" prompt. |
 
 ### Images
 

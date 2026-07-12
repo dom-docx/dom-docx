@@ -41,6 +41,8 @@ export interface ParsedCss {
   paddingLeft?: number;
   /** Explicit CSS height in twips (px/pt/em) — used for color-bar sizing. */
   heightTwips?: number;
+  /** CSS `min-height` in twips — a floor for flex-item box height. */
+  minHeightTwips?: number;
   /** Explicit CSS width: absolute in twips, or percentage of the containing block. */
   widthTwips?: number;
   widthPercent?: number;
@@ -306,6 +308,9 @@ export function parseInlineStyle(style: string | undefined): ParsedCss {
         break;
       case "height":
         result.heightTwips = parseLength(value);
+        break;
+      case "min-height":
+        result.minHeightTwips = parseLength(value);
         break;
       case "width": {
         const percent = value.trim().match(/^(\d+(?:\.\d+)?)\s*%$/);

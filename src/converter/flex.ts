@@ -38,11 +38,17 @@ export interface FlexItemContent {
   /** Shrink-wrapped column width when flex items have no flex-grow. */
   intrinsicWidthTwips?: number;
   /**
-   * Estimated tight content height (twips) for card-style items with block children.
+   * Estimated tight content height (twips) for text card-style items with block children.
    * LibreOffice sizes rows by natural font metrics (ignoring EXACT line spacing), so an
-   * explicit exact row height is needed to keep cards from inflating vertically.
+   * explicit exact row height is needed to keep text cards from inflating vertically.
+   * Omitted for items that wrap raster `<img>` / `<canvas>` — EXACT fights the drawing
+   * and overflows neighboring content in LibreOffice.
    */
   contentHeightTwips?: number;
+  /** CSS `min-height` (twips) — a floor applied to the flex row as AT_LEAST height. */
+  minHeightTwips?: number;
+  /** Item has stacked block children (a "card"): content flows from the top, not centered. */
+  stackedContent?: boolean;
 }
 
 function elementPlainText(element: Element): string {
@@ -204,7 +210,8 @@ export function makeFlexRowTable(
         width: { size: width, type: WidthType.DXA },
         // Card items (stacked block children) flow from the top like the browser;
         // simple inline items stay vertically centered.
-        verticalAlign: item.contentHeightTwips ? VerticalAlign.TOP : VerticalAlign.CENTER,
+        verticalAlign:
+          item.contentHeightTwips || item.stackedContent ? VerticalAlign.TOP : VerticalAlign.CENTER,
         shading: item.layout.shading
           ? { type: ShadingType.CLEAR, ...item.layout.shading }
           : undefined,
@@ -230,13 +237,23 @@ export function makeFlexRowTable(
     }
   });
 
-  // Card rows: LibreOffice sizes rows by natural font metrics, inflating cards. Force an
-  // exact row height = the tallest item's tight content height so cards match the browser.
+  // Card rows (text-only): LibreOffice sizes rows by natural font metrics, inflating
+  // cards. Force an exact row height = the tallest item's tight content height.
+  // Items with raster media omit contentHeightTwips so the drawing sizes the row —
+  // EXACT + chart-wrapper CSS heights overflows neighboring text in LibreOffice.
   const maxContentHeight = Math.max(0, ...items.map((it) => it.contentHeightTwips ?? 0));
-  const rowOptions =
-    maxContentHeight > 0
-      ? { children: cells, height: { value: maxContentHeight, rule: HeightRule.EXACT } }
-      : { children: cells };
+  const maxMinHeight = Math.max(0, ...items.map((it) => it.minHeightTwips ?? 0));
+  let rowOptions: { children: TableCell[]; height?: { value: number; rule: (typeof HeightRule)[keyof typeof HeightRule] } };
+  if (maxContentHeight > 0) {
+    // Text cards: EXACT, but never shorter than a declared `min-height`.
+    rowOptions = { children: cells, height: { value: Math.max(maxContentHeight, maxMinHeight), rule: HeightRule.EXACT } };
+  } else if (maxMinHeight > 0) {
+    // Media / min-height cards: AT_LEAST the `min-height` so the box matches the CSS
+    // floor and still grows to fit a taller drawing.
+    rowOptions = { children: cells, height: { value: maxMinHeight, rule: HeightRule.ATLEAST } };
+  } else {
+    rowOptions = { children: cells };
+  }
 
   const inner = new Table({
     width: { size: totalWidth, type: WidthType.DXA },

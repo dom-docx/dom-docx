@@ -6,14 +6,14 @@ To generate suite metrics, run `npm run score:suite` then `npm run docs:sync`. *
 
 ## Summary
 
-| Metric | Standard (17) | Edge (19) | All (36) |
+| Metric | Standard (17) | Edge (20) | All (37) |
 |--------|---------------|-----------|----------|
-| XML schema pass | 17 / 17 | 19 / 19 | **36 / 36** |
-| Avg **visual (layout-based)** | 96.07% | 96.58% | **96.34%** |
-| Avg raw layout (pre-guards) | 96.07% | 96.58% | **96.34%** |
-| Avg pixel match (tripwire, unscored) | 86.99% | 93.91% | **90.64%** |
-| Avg engine score | 95.75 | 95.94 | **95.85** |
-| Avg compile | — | — | **41.6 ms** |
+| XML schema pass | 17 / 17 | 20 / 20 | **37 / 37** |
+| Avg **visual (layout-based)** | 96.07% | 96.44% | **96.27%** |
+| Avg raw layout (pre-guards) | 96.07% | 96.60% | **96.36%** |
+| Avg pixel match (tripwire, unscored) | 86.99% | 93.64% | **90.58%** |
+| Avg engine score | 95.50 | 95.39 | **95.44** |
+| Avg compile | — | — | **44.4 ms** |
 | Identity-pair calibration (full 36) | — | — | **mean 96.34% / min 68.53%** |
 
 Tables below use the **layout-based visual** score; misaligned px is the raw pixel tripwire.
@@ -42,7 +42,7 @@ Tables below use the **layout-based visual** score; misaligned px is the raw pix
 | `centered-paragraph` | `text-align: center` | ✓ | 95.93% | 762 |
 | `horizontal-rule` | Content separated by `<hr>` | ✓ | 93.08% | 2,475 |
 
-## Edge cases (19)
+## Edge cases (20)
 
 | Test | Description | XML | Visual | Misaligned px |
 |------|-------------|-----|--------|---------------|
@@ -56,6 +56,7 @@ Tables below use the **layout-based visual** score; misaligned px is the raw pix
 | `mixed-margins-paddings` | Asymmetric margin/padding, bordered box | ✓ | 94.76% | 5,415 |
 | `flex-row-horizontal` | `display:flex; flex-direction:row` — three columns with gap | ✓ | 96.79% | 2,884 |
 | `flex-column-vertical` | `display:flex; flex-direction:column` — stacked rows with gap | ✓ | 98.16% | 12,750 |
+| `flex-row-images` | Flex row of bordered cards each wrapping an `<img>` (LibreOffice overflow repro; no rasterize) | ✓ | 93.73% | 31,751 |
 | `inline-svg-chart` | Inline SVG bar chart → native DOCX bands | ✓ | 96.98% | 2,906 |
 | `rasterize-in-place-chart` | Complex SVG + canvas rasterized via `rasterizeInPlace` before conversion | ✓ | 98.91% | 6,752 |
 | `table-cell-bar-divs` | CSS bar divs inside table cells | ✓ | 98.67% | 5,857 |
@@ -77,11 +78,11 @@ Bottom 8 cases by layout-based visual score — human rating (1 = looks right, 2
 | `typography-colors` | 90.35% | 1 | Foreground/background colors, mixed inline & block |
 | `nested-blockquotes-lists` | 91.00% | 1 |  |
 | `horizontal-rule` | 93.08% | 1 | Minor vertical height issues |
+| `flex-row-images` | 93.73% | — | Flex row of bordered cards each wrapping an `<img>` (LibreOffice overflow repro; no rasterize) |
 | `mixed-margins-paddings` | 94.76% | 2 | Not bad but the Nested margin box is lower than the source html |
 | `paragraph-with-line-break` | 95.42% | 2 | Lines 2 and 3 are indented in docx, html is all left aligned |
 | `multiple-links` | 95.80% | 1 | Two links in one sentence |
 | `simple-table-2x2` | 95.82% | 1 | 2-column table, header + one row |
-| `centered-paragraph` | 95.93% | 1 | `text-align: center` |
 
 ---
 

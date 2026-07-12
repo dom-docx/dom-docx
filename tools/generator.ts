@@ -346,6 +346,32 @@ const EDGE_TEST_CASES: TestCase[] = [
     `,
   },
   {
+    // Repro for LibreOffice: bordered flex cards wrapping <img> (sales-dashboard charts).
+    // No rasterize needed — plain data: PNGs. Nested height wrappers mimic Highcharts mounts.
+    name: "flex-row-images",
+    description:
+      "Flex row of bordered cards each wrapping an `<img>` (LibreOffice overflow repro; no rasterize)",
+    html: `
+      <h2 style="color:#2d3748;font-size:1.1rem">Revenue Trends</h2>
+      <p style="line-height:1.7;margin:0.75rem 0 1rem;color:#475569">
+        Q2 revenue climbed each month, finishing 16% above the quarterly target. North America
+        drove the majority of growth; LATAM remains below quota but improved in June.
+      </p>
+      <div style="display:flex;flex-direction:row;gap:24px">
+        <div style="flex:1;min-width:0;min-height:320px;border:1px solid #dde3ec;padding:8px;background:#fff">
+          <div style="height:300px;position:relative">
+            <img src="${TEST_IMAGE_260x140}" width="${TEST_IMAGE_W}" height="${TEST_IMAGE_H}" alt="Monthly revenue">
+          </div>
+        </div>
+        <div style="flex:1;min-width:0;min-height:320px;border:1px solid #dde3ec;padding:8px;background:#fff">
+          <div style="height:300px;position:relative">
+            <img src="${TEST_IMAGE_260x140}" width="${TEST_IMAGE_W}" height="${TEST_IMAGE_H}" alt="Revenue by region">
+          </div>
+        </div>
+      </div>
+    `,
+  },
+  {
     name: "inline-svg-chart",
     description: "Inline SVG bar chart → native DOCX bands",
     html: `

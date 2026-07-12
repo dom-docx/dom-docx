@@ -15,25 +15,25 @@ All libraries use the **same visual harness**: human-validated layout fidelity p
 
 ---
 
-## Suite summary (36 cases)
+## Suite summary (37 cases)
 
 | Metric | html-to-docx | @turbodocx/html-to-docx | dom-docx |
 |--------|---:|---:|---:|
-| XML schema pass | 0 / 36 | 0 / 36 | **36 / 36** |
-| Avg **visual (layout-based)** | 66.45% | 68.75% | **96.34%** |
-| Avg editability | 100.00 | 100.00 | 99.44 |
-| Avg engine score | 83.08 | 83.89 | **95.85** |
-| Avg compile | 12.5 ms | 15.8 ms | 41.6 ms |
+| XML schema pass | 0 / 37 | 0 / 37 | **37 / 37** |
+| Avg **visual (layout-based)** | 66.09% | 68.27% | **96.27%** |
+| Avg editability | 100.00 | 100.00 | 99.46 |
+| Avg engine score | 82.27 | 83.57 | **95.44** |
+| Avg compile | 18.4 ms | 18.7 ms | 44.4 ms |
 
 Δ vs dom-docx (library − dom-docx):
 
 | Library | Δ visual | Δ engine |
 |---------|---------:|---------:|
-| html-to-docx | **-29.20** | -12.16 |
-| @turbodocx/html-to-docx | **-26.89** | -11.34 |
+| html-to-docx | **-30.18** | -13.17 |
+| @turbodocx/html-to-docx | **-28.00** | -11.87 |
 
-**dom-docx wins 33 / 36 cases** against html-to-docx (higher layout-based visual score).
-**dom-docx wins 29 / 36 cases** against @turbodocx/html-to-docx (higher layout-based visual score).
+**dom-docx wins 34 / 37 cases** against html-to-docx (higher layout-based visual score).
+**dom-docx wins 30 / 37 cases** against @turbodocx/html-to-docx (higher layout-based visual score).
 
 ---
 
@@ -43,6 +43,7 @@ All libraries use the **same visual harness**: human-validated layout fidelity p
 |------|:---:|-------:|-------:|--:|
 | `inline-svg-chart` | ✗ | 7.21% | 96.98% | -89.78 |
 | `nested-blockquotes-lists` | ✗ | 12.11% | 91.00% | -78.89 |
+| `rasterize-in-place-chart` | ✗ | 24.49% | 98.91% | -74.42 |
 | `image-figure` | ✗ | 29.30% | 99.34% | -70.04 |
 | `table-row-backgrounds` | ✗ | 29.81% | 98.70% | -68.89 |
 | `typography-colors` | ✗ | 26.47% | 90.35% | -63.88 |
@@ -50,9 +51,9 @@ All libraries use the **same visual harness**: human-validated layout fidelity p
 | `flex-column-vertical` | ✗ | 38.65% | 98.16% | -59.51 |
 | `borderless-table` | ✗ | 39.12% | 96.70% | -57.58 |
 | `table-cell-bar-divs` | ✗ | 43.62% | 98.67% | -55.05 |
-| `rasterize-in-place-chart` | ✗ | 24.49% | 73.99% | -49.50 |
 | `unicode-emoji-content` | ✗ | 49.01% | 96.30% | -47.29 |
 | `mixed-margins-paddings` | ✗ | 52.79% | 94.76% | -41.97 |
+| `flex-row-images` | ✗ | 53.34% | 93.73% | -40.40 |
 | `inline-vs-block` | ✗ | 60.26% | 97.96% | -37.70 |
 | `table-mismatched-cells` | ✗ | 60.64% | 96.12% | -35.48 |
 | `simple-table-2x2` | ✗ | 61.99% | 95.82% | -33.83 |
@@ -84,12 +85,13 @@ All libraries use the **same visual harness**: human-validated layout fidelity p
 |------|:---:|-------:|-------:|--:|
 | `inline-svg-chart` | ✗ | 9.83% | 96.98% | -87.15 |
 | `nested-blockquotes-lists` | ✗ | 11.51% | 91.00% | -79.49 |
+| `rasterize-in-place-chart` | ✗ | 25.97% | 98.91% | -72.94 |
 | `image-figure` | ✗ | 30.48% | 99.34% | -68.86 |
 | `flex-row-horizontal` | ✗ | 33.84% | 96.79% | -62.95 |
 | `flex-column-vertical` | ✗ | 37.49% | 98.16% | -60.67 |
 | `typography-colors` | ✗ | 35.86% | 90.35% | -54.49 |
-| `rasterize-in-place-chart` | ✗ | 25.97% | 73.99% | -48.02 |
 | `borderless-table` | ✗ | 49.51% | 96.70% | -47.19 |
+| `flex-row-images` | ✗ | 50.82% | 93.73% | -42.92 |
 | `inline-vs-block` | ✗ | 55.46% | 97.96% | -42.50 |
 | `table-mismatched-cells` | ✗ | 57.20% | 96.12% | -38.92 |
 | `simple-table-2x2` | ✗ | 57.99% | 95.82% | -37.83 |
@@ -163,8 +165,13 @@ Regenerate: `npm run score:css-cascade`.
 <!-- SECTION:guard-status:START -->
 | Guard | Status | Result | Command |
 |-------|:------:|--------|---------|
-| Config options | ✅ | 33/33 checks passed | `npm run guard:config` |
-| Inline path | ✅ | 36/36 equivalent (default vs explicit inline) | `npm run guard:inline` |
+| Browser bundle parity | ✅ | 36/36 equivalent to Node computed-native | `npm run guard:browser-parity` |
+| Computed parity (oracle vs native) | ✅ | 36/36 byte-identical | `npm run guard:computed-parity` |
+| Config options | ✅ | 70/70 checks passed (node + browser) | `npm run guard:config` |
+| Inline path | ✅ | 37/37 equivalent (default vs explicit inline) | `npm run guard:inline` |
+| Pack smoke | ✅ | 1/1 library + CLI + browser entry install and convert | `npm run guard:pack-smoke` |
+| Page breaks | ✅ | 9/9 OOXML + multi-page PDF + computed | `npm run guard:page-break` |
+| Table of contents | ✅ | 38/38 OOXML field structure + schema | `npm run guard:toc` |
 <!-- SECTION:guard-status:END -->
 
 ---

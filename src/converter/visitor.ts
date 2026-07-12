@@ -551,9 +551,14 @@ function emitFlowBlocks(
     // line-height 1.4), not AUTO — halfPt/2 → pt × 1.4 × 20 twips = halfPt × 14.
     // Rasterized chart images need a taller line box or LibreOffice clips them.
     const textLineTwips = (inheritedTypography.fontSize ?? ctx.defaultSizeHalfPoints) * 14;
-    const exactLineTwips = ctx.flexBlockContent
-      ? Math.max(textLineTwips, maxInlineMediaHeightTwips(pendingInline))
-      : undefined;
+    const mediaTwips = ctx.flexBlockContent ? maxInlineMediaHeightTwips(pendingInline) : 0;
+    // EXACT line height crops an inline image: the image sits a full image-height
+    // above the baseline, which overflows an EXACT box of that same height, so
+    // LibreOffice clips its top. Use EXACT only for pure-text flex card lines; when
+    // the line carries a raster image, switch to AT_LEAST the image height so the
+    // line grows to fit it instead of cropping.
+    const exactLineTwips =
+      ctx.flexBlockContent && mediaTwips === 0 ? textLineTwips : undefined;
     blocks.push(
       ...emitBlockContent(
         collectInlineRunsFromNodes(pendingInline, inheritedTypography, undefined, ctx.styleResolver, ctx.defaultSizeHalfPoints),
@@ -562,9 +567,11 @@ function emitFlowBlocks(
           ...extra,
           hasLineBreaks,
           exactLineTwips,
-          ...(inheritedTypography.fontSize
-            ? { atLeastLineTwips: inheritedTypography.fontSize * 14 }
-            : {}),
+          ...(mediaTwips > 0
+            ? { atLeastLineTwips: Math.max(textLineTwips, mediaTwips) }
+            : inheritedTypography.fontSize
+              ? { atLeastLineTwips: inheritedTypography.fontSize * 14 }
+              : {}),
         },
         containerElement,
       ),
@@ -585,28 +592,51 @@ function emitFlowBlocks(
   return blocks.length > 0 ? blocks : emitBlockContent([], blockLayout, extra, containerElement);
 }
 
-/** Tight content height (twips) of a card-style flex item: one EXACT line box per
- *  block child (fontSize × 14 = size × 1.4) plus the item's top/bottom padding.
- *  Rasterized charts/images can be much taller than a single text line — include them. */
+/** True when the flex item subtree contains a raster `<img>` / `<canvas>`. */
+function flexItemHasRasterMedia(item: Element): boolean {
+  const walk = (el: Element): boolean => {
+    const tag = el.name.toLowerCase();
+    if (tag === "img" || tag === "canvas") return true;
+    for (const child of el.children ?? []) {
+      if (isElement(child) && walk(child)) return true;
+    }
+    return false;
+  };
+  return walk(item);
+}
+
+/**
+ * Tight content height (twips) of a card-style flex item: one EXACT line box per
+ * block child (fontSize × 14 = size × 1.4) plus the item's top/bottom padding.
+ * Rasterized charts/images can be much taller than a single text line — include them.
+ *
+ * Prefer explicit `<img>` / `<canvas>` height attributes over ancestor CSS heights
+ * (e.g. Highcharts `.highcharts-container`). Mixing wrapper CSS into EXACT row
+ * height makes LibreOffice draw a selection frame that overflows neighboring text;
+ * Word is more forgiving.
+ */
 function estimateFlexItemMediaHeightTwips(
   item: Element,
   itemLayout: BlockLayout,
   ctx: VisitorContext,
 ): number {
-  let maxTwips = 0;
+  let mediaTwips = 0;
+  let cssTwips = 0;
   const walk = (el: Element): void => {
     const tag = el.name.toLowerCase();
     if (tag === "img" || tag === "canvas") {
       const h = mediaHeightPx(el);
-      if (h) maxTwips = Math.max(maxTwips, pxToTwips(h));
+      if (h) mediaTwips = Math.max(mediaTwips, pxToTwips(h));
     }
     const css = ctx.styleResolver.getCss(el);
-    if (css.heightTwips) maxTwips = Math.max(maxTwips, css.heightTwips);
+    if (css.heightTwips) cssTwips = Math.max(cssTwips, css.heightTwips);
     for (const child of el.children ?? []) {
       if (isElement(child)) walk(child);
     }
   };
   walk(item);
+  // Explicit media size wins — ignore inflated chart-wrapper CSS heights.
+  const maxTwips = mediaTwips > 0 ? mediaTwips : cssTwips;
   if (maxTwips === 0) return 0;
   return maxTwips + (itemLayout.paddingTop ?? 0) + (itemLayout.paddingBottom ?? 0);
 }
@@ -648,19 +678,33 @@ function processFlexContainer(
     if (hasDirectBlockChild(item, ctx.styleResolver)) {
       // Card-style flex items: tighten stacked lines to CSS line boxes (EXACT per font)
       // and force an exact row height, since LibreOffice sizes rows by natural metrics.
+      // Skip EXACT when the item is (or wraps) a raster image — LibreOffice overflows
+      // neighboring paragraphs when an EXACT row fights the drawing's intrinsic size
+      // (common after chart rasterize leaves a tall Highcharts wrapper around an <img>).
       const itemCtx: VisitorContext = { ...childCtx, flexBlockContent: true };
-      const contentHeightTwips = estimateFlexItemContentHeight(item, itemLayout, ctx);
+      const hasMedia = flexItemHasRasterMedia(item);
+      const contentHeightTwips = hasMedia
+        ? undefined
+        : estimateFlexItemContentHeight(item, itemLayout, ctx);
+      // Render the item's CHILDREN, not the item element: the flex cell already
+      // paints the item's border / background / padding (see makeFlexRowTable), so
+      // re-rendering the item div would wrap the content in a second bordered
+      // container table — a doubled box around each card.
+      const contentLayout: BlockLayout = { alignment: itemLayout.alignment };
       return {
         layout: itemLayout,
-        blocks: visitElement($, item, itemCtx),
+        blocks: emitFlowBlocks($, item.children ?? [], contentLayout, typography, itemCtx, {}, item),
         intrinsicWidthTwips,
         contentHeightTwips,
+        minHeightTwips: itemCss.minHeightTwips,
+        stackedContent: true,
       };
     }
 
     return {
       layout: itemLayout,
       intrinsicWidthTwips,
+      minHeightTwips: itemCss.minHeightTwips,
       blocks: [
         makeParagraph(
           collectInlineRunsFromNodes(item.children ?? [], typography, undefined, ctx.styleResolver, ctx.defaultSizeHalfPoints),
