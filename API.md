@@ -236,6 +236,8 @@ When `rasterizeInPlace` is set, rasterization runs on the Playwright page **befo
 
 When `styleSource: "computed"` and you pass `rootSelector`, computed-style snapshots are scoped to that element so paths match `element.innerHTML` (SPA fragment export).
 
+**Light document canvas:** DOCX is treated as a white-page medium. On Node, Playwright snapshots force `prefers-color-scheme: light`. On both Node and browser, near-white text colors with no dark block background are dropped so dark-mode tabs don’t produce invisible light-on-white runs (light text on an intentionally dark shaded block is kept).
+
 ---
 
 ## Images & the resolver hook
@@ -686,6 +688,7 @@ These exercise the API and write artifacts under `output/`:
 | `npm run guard:config` | `ConvertOptions` OOXML checks |
 | `npm run guard:toc-slot` | `tocHtml` slot placement + in-page links + schema |
 | `npm run guard:internal-href` | Same-document `href="#id"` → internal hyperlink + bookmark |
+| `npm run guard:document-canvas` | Dark-theme colors remapped for light DOCX canvas |
 | `npm run score:benchmark` | OSS html-to-docx / TurboDocx comparison |
 | `npm run build:browser` | esbuild → `dist/browser/dom-docx.browser.js` |
 | `npm run typecheck` | TypeScript compile check |

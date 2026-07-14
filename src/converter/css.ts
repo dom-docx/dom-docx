@@ -462,6 +462,12 @@ export function isBlockElement(element: Element, resolver: StyleResolver = INLIN
   // `<svg>` is always handled as a block via convertSvg. Computed `getComputedStyle`
   // reports display:inline for inline SVG, which would otherwise skip the svg dispatch.
   if (element.name.toLowerCase() === "svg") return true;
+  // `<img>`/`<picture>` are replaced inline media, rendered via imageRunFromElement in
+  // the inline-run collection. Never treat them as block: docs sites give images
+  // `display: inline-block` (or block), which would otherwise route the element to the
+  // block-container dispatch — which has no image handling, silently dropping it.
+  const tag = element.name.toLowerCase();
+  if (tag === "img" || tag === "picture") return false;
   const css = resolver.getCss(element);
   const display = css.display;
 

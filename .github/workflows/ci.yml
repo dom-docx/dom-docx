@@ -31,4 +31,5 @@ jobs:
       - run: npm run guard:config
       - run: npm run guard:toc-slot
       - run: npm run guard:internal-href
+      - run: npm run guard:document-canvas
       - run: npm run guard:pack-smoke

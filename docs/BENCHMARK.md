@@ -20,10 +20,10 @@ All libraries use the **same visual harness**: human-validated layout fidelity p
 | Metric | html-to-docx | @turbodocx/html-to-docx | dom-docx |
 |--------|---:|---:|---:|
 | XML schema pass | 0 / 37 | 0 / 37 | **37 / 37** |
-| Avg **visual (layout-based)** | 66.09% | 68.27% | **96.27%** |
+| Avg **visual (layout-based)** | 66.09% | 68.27% | **96.29%** |
 | Avg editability | 100.00 | 100.00 | 99.46 |
-| Avg engine score | 82.33 | 83.41 | **94.91** |
-| Avg compile | 16.9 ms | 19.1 ms | 50.9 ms |
+| Avg engine score | 82.33 | 83.41 | **94.51** |
+| Avg compile | 16.9 ms | 19.1 ms | 49.8 ms |
 
 Δ vs dom-docx (library − dom-docx):
 
@@ -168,6 +168,7 @@ Regenerate: `npm run score:css-cascade`.
 | Browser bundle parity | ✅ | 36/36 equivalent to Node computed-native | `npm run guard:browser-parity` |
 | Computed parity (oracle vs native) | ✅ | 36/36 byte-identical | `npm run guard:computed-parity` |
 | Config options | ✅ | 80/80 checks passed (node + browser) | `npm run guard:config` |
+| Document canvas colors | ✅ | 17/17 structural checks | `npm run guard:document-canvas` |
 | Inline path | ✅ | 37/37 equivalent (default vs explicit inline) | `npm run guard:inline` |
 | Internal hrefs | ✅ | 16/16 structural checks | `npm run guard:internal-href` |
 | Pack smoke | ✅ | 1/1 library + CLI + browser entry install and convert | `npm run guard:pack-smoke` |

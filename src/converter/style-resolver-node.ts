@@ -45,6 +45,8 @@ export async function openPlaywrightPage(
   const page = await browser.newPage({
     viewport: { width: VIEWPORT_WIDTH_PX, height: VIEWPORT_HEIGHT_PX },
   });
+  // DOCXs are a light canvas — never snapshot prefers-color-scheme: dark colors.
+  await page.emulateMedia({ colorScheme: "light" });
   await page.setContent(wrapHtml(html), { waitUntil: "networkidle" });
   return page;
 }
@@ -65,20 +67,27 @@ export async function createComputedStyleResolver(
   html: string,
   browser: Browser,
 ): Promise<ComputedStyleResolver> {
-  const page = await browser.newPage({
-    viewport: { width: VIEWPORT_WIDTH_PX, height: VIEWPORT_HEIGHT_PX },
-  });
+  const page = await openPlaywrightPage(html, browser);
   try {
-    await page.setContent(wrapHtml(html), { waitUntil: "networkidle" });
     return ComputedStyleResolver.fromSnapshots(await snapshotComputedStyles(page));
   } finally {
     await page.close();
   }
 }
 
+/**
+ * Snapshot computed styles from a live Playwright page for DOCX export.
+ * Forces `prefers-color-scheme: light` for the duration of the snapshot (Word is a
+ * white-page medium); restores the previous media emulation afterward.
+ */
 export async function computedStyleResolverFromPage(
   page: Page,
   rootSelector?: string,
 ): Promise<ComputedStyleResolver> {
-  return ComputedStyleResolver.fromSnapshots(await snapshotComputedStyles(page, rootSelector));
+  await page.emulateMedia({ colorScheme: "light" });
+  try {
+    return ComputedStyleResolver.fromSnapshots(await snapshotComputedStyles(page, rootSelector));
+  } finally {
+    await page.emulateMedia({ colorScheme: null });
+  }
 }

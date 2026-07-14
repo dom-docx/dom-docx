@@ -10,6 +10,7 @@ import {
   type ParsedBorder,
   type ParsedCss,
 } from "./css.js";
+import { remapComputedColorsForDocumentCanvas } from "./document-canvas.js";
 import { elementStylePath } from "./style-path.js";
 import { HEADING_FONT_HALF_POINTS, HEADING_MARGIN_EM } from "./constants.js";
 import type { ComputedStyleSnapshot } from "./computed-style-snapshot.js";
@@ -82,7 +83,9 @@ export function parsedCssFromComputedRecord(raw: Record<string, string>): Parsed
     css.pageBreakAfter = true;
   }
 
-  return css;
+  // DOCXs assume a light canvas — drop near-white text with no dark fill so Word
+  // doesn't stamp invisible light-on-white runs from a dark-mode browser tab.
+  return remapComputedColorsForDocumentCanvas(css);
 }
 
 export class InlineStyleResolver implements StyleResolver {
