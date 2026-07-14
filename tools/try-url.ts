@@ -1,13 +1,12 @@
 #!/usr/bin/env -S npx tsx
-// Ad-hoc: convert a real, live webpage to .docx for manual inspection.
-// Not part of the test suite — just a way to point the converter at arbitrary
-// URLs (like the Red Hat docs page from the bug report) and see what happens.
+// Ad-hoc: convert a live webpage to .docx for manual inspection.
+// Not part of the test suite — point the converter at any URL and inspect the result.
 //
 // Usage (run with tsx — it imports TypeScript from src/):
 //   npx tsx tools/try-url.ts <url> [contentSelector] [outFile]
 //
 // Examples:
-//   npx tsx tools/try-url.ts https://docs.redhat.com/.../managing_storage_devices/index ".content"
+//   npx tsx tools/try-url.ts https://developer.mozilla.org/en-US/docs/Web/HTML/Element/article "article" mdn-article.docx
 //   npx tsx tools/try-url.ts https://example.com "main" out.docx
 import { writeFile } from "node:fs/promises";
 import { chromium } from "playwright";
@@ -36,9 +35,8 @@ try {
   //
   // Fetch through the browser's request context (page.request), NOT a bare Node
   // `fetch`: it reuses the page's cookies, real user-agent, and origin, so image
-  // CDNs behind a bot filter (e.g. Akamai on access.redhat.com) serve the bytes
-  // instead of a challenge/403. A plain fetch from Node silently returned nothing,
-  // so every image dropped to alt text and the figures came out empty.
+  // CDNs behind a bot filter serve the bytes instead of a challenge/403. A plain
+  // fetch from Node often returns nothing, and every image drops to alt text.
   const imageResolver: ImageResolver = async (src) => {
     try {
       const absolute = new URL(src, url).href;
