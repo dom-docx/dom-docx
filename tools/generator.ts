@@ -158,6 +158,32 @@ const docx = await convertHtmlToDocx(html);</code></pre>
     `,
   },
   {
+    name: "table-colgroup-widths",
+    description: "Column widths from `<colgroup>` (wide first column, short cells) + a colspan section row",
+    // The first column is fixed at 50% by `<colgroup>` despite holding text no longer
+    // than the others. If `<colgroup>` were ignored, dom-docx would content-weight the
+    // columns roughly evenly — visibly different from the browser's 50/25/25 — so this
+    // catches a colgroup-support regression without pathological wrapping.
+    html: `
+      <table border="1" cellpadding="4" style="border-collapse:collapse;table-layout:fixed;width:100%">
+        <colgroup>
+          <col style="width:50%">
+          <col style="width:25%">
+          <col style="width:25%">
+        </colgroup>
+        <thead>
+          <tr><th align="left">Device type</th><th align="left">Kernel name</th><th align="left">Symlink base</th></tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="3"><strong>Real Devices</strong></td></tr>
+          <tr><td>nvme</td><td>/dev/nvme*</td><td>by-id</td></tr>
+          <tr><td>scsi</td><td>/dev/sd*</td><td>by-path</td></tr>
+          <tr><td>virtio</td><td>/dev/vd*</td><td>by-uuid</td></tr>
+        </tbody>
+      </table>
+    `,
+  },
+  {
     name: "paragraph-with-line-break",
     description: "Address block with `<br>` tags",
     html: `

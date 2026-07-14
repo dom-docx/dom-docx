@@ -366,6 +366,7 @@ function analyzeGrid(
   contentWidthTwips: number,
   declaredWidthTwips?: number,
   fillParent = false,
+  colWidths: Array<number | undefined> = [],
 ): GridAnalysis {
   const { placedRows, maxColumns } = placeCells(rows);
 
@@ -374,9 +375,12 @@ function analyzeGrid(
   const columnMinWidths = Array.from({ length: maxColumns }, (_, i) =>
     columnHasContent[i] ? pxToTwips(32) : LAYOUT_GUTTER_TWIPS,
   );
+  // Seed pinned widths from `<colgroup>`; an explicit per-cell width can still raise
+  // a column below (max wins). Colgroup-pinned columns also feed the natural table
+  // width, so a colgroup-sized table stretches to its declared column total.
   const pinnedWidths: Array<number | undefined> = Array.from(
     { length: maxColumns },
-    () => undefined,
+    (_, i) => colWidths[i],
   );
 
   for (const row of placedRows) {
@@ -421,6 +425,50 @@ function parseCellPadding(table: Element): number | undefined {
   if (!cellpadding) return undefined;
   const px = parseFloat(cellpadding);
   return Number.isFinite(px) ? pxToTwips(px) : undefined;
+}
+
+/** One `<col>`'s width in twips: `style="width:N%|Npx"` or `width="N%|N"`, else undefined. */
+function colWidthTwips(col: Element, contentWidthTwips: number): number | undefined {
+  const style = col.attribs?.style ?? "";
+  const styleMatch = style.match(/width\s*:\s*([\d.]+)\s*(%|px)?/i);
+  if (styleMatch) {
+    const value = parseFloat(styleMatch[1]!);
+    if (Number.isFinite(value)) {
+      return styleMatch[2] === "%"
+        ? Math.round((value / 100) * contentWidthTwips)
+        : pxToTwips(value);
+    }
+  }
+  const attr = col.attribs?.width?.trim();
+  if (attr) {
+    const pct = attr.match(/^([\d.]+)%$/);
+    if (pct) return Math.round((parseFloat(pct[1]!) / 100) * contentWidthTwips);
+    const px = parseFloat(attr);
+    if (Number.isFinite(px)) return pxToTwips(px);
+  }
+  return undefined;
+}
+
+/**
+ * Per-column widths (twips) declared by `<colgroup><col>` — expanded for `span`.
+ * Real-world tables (docs sites, DocBook output) size columns entirely via colgroup
+ * `width:33%` cols with no `width` on the table itself; without this, dom-docx has no
+ * width signal and collapses every column to its min-content width (~1 char wide).
+ */
+function colgroupColumnWidths(
+  $: CheerioAPI,
+  table: Element,
+  contentWidthTwips: number,
+): Array<number | undefined> {
+  const cols = $(table).children("colgroup").children("col").toArray();
+  if (cols.length === 0) return [];
+  const widths: Array<number | undefined> = [];
+  for (const col of cols) {
+    const span = Math.max(1, parseInt(col.attribs?.span ?? "1", 10) || 1);
+    const width = colWidthTwips(col, contentWidthTwips);
+    for (let i = 0; i < span; i++) widths.push(width);
+  }
+  return widths;
 }
 
 /** Declared table width from CSS or the legacy `width` attribute. */
@@ -1039,6 +1087,7 @@ export function convertTable(
     declared.percent !== undefined
       ? Math.round((declared.percent / 100) * contentWidthTwips)
       : declared.twips;
+  const colWidths = colgroupColumnWidths($, table, contentWidthTwips);
   const analysis = analyzeGrid(
     parsedRows,
     styleResolver,
@@ -1046,6 +1095,7 @@ export function convertTable(
     contentWidthTwips,
     declaredTwips,
     fillParent,
+    colWidths,
   );
   const plan = tableBorderPlan(table, styleResolver);
   const alignment = tableAlignment(table);
