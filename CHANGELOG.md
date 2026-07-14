@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## 0.1.8
 
 ### Fixed
 
@@ -45,13 +45,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
-- **Flex row of bordered cards wrapping an `<img>`** rendered wrong in LibreOffice: a doubled border (the item was emitted both as the flex cell *and* as a nested bordered table), the top of the image clipped (an EXACT line box cropped the inline image above the baseline), and `min-height` ignored (the card hugged the image). Flex items now render their children into the single bordered cell; image lines use AT_LEAST height so they aren't cropped; `min-height` is parsed and applied as an AT_LEAST row height; and card content is top-aligned like the browser. (`flex-row-images` visual 51.6% → 93.7%; full-suite score unchanged.)
+- **Flex row of bordered cards wrapping an `<img>`** rendered wrong in LibreOffice: a doubled border (the item was emitted both as the flex cell _and_ as a nested bordered table), the top of the image clipped (an EXACT line box cropped the inline image above the baseline), and `min-height` ignored (the card hugged the image). Flex items now render their children into the single bordered cell; image lines use AT_LEAST height so they aren't cropped; `min-height` is parsed and applied as an AT_LEAST row height; and card content is top-aligned like the browser. (`flex-row-images` visual 51.6% → 93.7%; full-suite score unchanged.)
 
 ## [0.1.4] - 2026-07-10
 
 ### Added
 
-- **`tableOfContents`** — insert a native Word Table of Contents field built from the document's `h1`–`h6` (mapped to Word Heading 1–6). `true` for defaults, or `{ title?, headingRange?, hyperlink?, pageBreakAfter? }`. Heading titles are cached into the field so it is visible immediately; page numbers are filled by the word processor on field update (Word updates on open via the dirty/`updateFields` flags). Heading styles get explicit `w:outlineLvl` so LibreOffice's "Update Table of Contents" repopulates instead of emptying the table. *(Reworked to a clickable, page-number-less TOC in Unreleased — see above.)*
+- **`tableOfContents`** — insert a native Word Table of Contents field built from the document's `h1`–`h6` (mapped to Word Heading 1–6). `true` for defaults, or `{ title?, headingRange?, hyperlink?, pageBreakAfter? }`. Heading titles are cached into the field so it is visible immediately; page numbers are filled by the word processor on field update (Word updates on open via the dirty/`updateFields` flags). Heading styles get explicit `w:outlineLvl` so LibreOffice's "Update Table of Contents" repopulates instead of emptying the table. _(Reworked to a clickable, page-number-less TOC in Unreleased — see above.)_
 - **`npm run guard:toc`** — structural regression for the TOC field, cached entries, heading outline levels, and OOXML schema validity (CI, no Playwright/LibreOffice)
 
 ### Changed
