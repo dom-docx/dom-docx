@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Fixed
+
+- **`<th>` header cells are centered by default, matching browsers.** Chromium/Firefox apply the UA default `th { text-align: center }`; dom-docx left header text left-aligned unless an explicit `text-align`/`align` was present, so plain `<th>` headers sat visibly off from the browser render (the `adjacent-tables` suite case scored H 74 from this alone — 85.4% → 96.1% after the fix). An explicit alignment still wins.
+- **Suite oracle: hidden/overlay content is excluded from expected text regardless of how it hides.** The text-fidelity oracle only stripped hidden elements carrying a `style` attribute, so content hidden via overlay semantics (`role="tooltip"`, closed `<dialog>`, `-dialog`/`-tooltip` components) stayed in the EXPECTED text and the converter was penalized for correctly skipping it (`tooltip-skipped` 86.6% → 96.3%). All 42 suite cases now score ≥ 90% (avg 96.3%).
+
 ## 0.1.10
 
 ### Fixed

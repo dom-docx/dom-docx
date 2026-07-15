@@ -20,17 +20,17 @@ All libraries use the **same visual harness**: human-validated layout fidelity p
 | Metric | html-to-docx | @turbodocx/html-to-docx | dom-docx |
 |--------|---:|---:|---:|
 | XML schema pass | 0 / 42 | 0 / 42 | **42 / 42** |
-| Avg **visual (layout-based)** | 64.69% | 65.73% | **95.79%** |
+| Avg **visual (layout-based)** | 64.56% | 65.61% | **96.27%** |
 | Avg editability | 100.00 | 100.00 | 99.29 |
-| Avg engine score | 82.09 | 82.21 | **95.21** |
-| Avg compile | 13.4 ms | 19.3 ms | 41.0 ms |
+| Avg engine score | 82.16 | 82.22 | **95.35** |
+| Avg compile | 11.7 ms | 17.2 ms | 41.9 ms |
 
 Δ vs dom-docx (library − dom-docx):
 
 | Library | Δ visual | Δ engine |
 |---------|---------:|---------:|
-| html-to-docx | **-31.10** | -13.12 |
-| @turbodocx/html-to-docx | **-30.05** | -13.00 |
+| html-to-docx | **-31.72** | -13.19 |
+| @turbodocx/html-to-docx | **-30.67** | -13.13 |
 
 **dom-docx wins 39 / 42 cases** against html-to-docx (higher layout-based visual score).
 **dom-docx wins 35 / 42 cases** against @turbodocx/html-to-docx (higher layout-based visual score).
@@ -50,18 +50,18 @@ All libraries use the **same visual harness**: human-validated layout fidelity p
 | `admonition-note` | ✗ | 33.30% | 97.04% | -63.74 |
 | `flex-column-vertical` | ✗ | 38.65% | 98.16% | -59.51 |
 | `borderless-table` | ✗ | 39.12% | 96.70% | -57.58 |
+| `tooltip-skipped` | ✗ | 39.14% | 96.32% | -57.18 |
 | `table-cell-bar-divs` | ✗ | 43.62% | 98.67% | -55.05 |
 | `table-colgroup-widths` | ✗ | 47.29% | 96.63% | -49.34 |
 | `unicode-emoji-content` | ✗ | 49.01% | 96.30% | -47.29 |
 | `flex-row-horizontal` | ✗ | 51.89% | 97.41% | -45.52 |
-| `tooltip-skipped` | ✗ | 44.61% | 86.63% | -42.02 |
 | `mixed-margins-paddings` | ✗ | 52.79% | 94.76% | -41.97 |
 | `flex-row-images` | ✗ | 53.34% | 93.73% | -40.40 |
+| `adjacent-tables` | ✗ | 57.23% | 96.09% | -38.86 |
 | `inline-vs-block` | ✗ | 60.26% | 97.96% | -37.70 |
 | `table-mismatched-cells` | ✗ | 60.64% | 96.12% | -35.48 |
 | `simple-table-2x2` | ✗ | 61.99% | 95.82% | -33.83 |
 | `simple-table-3col` | ✗ | 64.10% | 96.21% | -32.11 |
-| `adjacent-tables` | ✗ | 57.23% | 85.38% | -28.15 |
 | `horizontal-rule` | ✗ | 66.12% | 93.08% | -26.96 |
 | `modal-dialog-skipped` | ✗ | 71.93% | 94.75% | -22.82 |
 | `pre-code-block` | ✗ | 74.85% | 96.92% | -22.07 |
@@ -94,19 +94,19 @@ All libraries use the **same visual harness**: human-validated layout fidelity p
 | `image-figure` | ✗ | 30.48% | 99.33% | -68.85 |
 | `admonition-note` | ✗ | 33.62% | 97.04% | -63.42 |
 | `flex-column-vertical` | ✗ | 37.49% | 98.16% | -60.67 |
+| `tooltip-skipped` | ✗ | 38.42% | 96.32% | -57.90 |
 | `typography-colors` | ✗ | 35.86% | 90.35% | -54.49 |
 | `table-colgroup-widths` | ✗ | 44.72% | 96.63% | -51.91 |
 | `flex-row-horizontal` | ✗ | 46.38% | 97.41% | -51.03 |
 | `modal-dialog-skipped` | ✗ | 45.51% | 94.75% | -49.24 |
 | `borderless-table` | ✗ | 49.51% | 96.70% | -47.19 |
 | `flex-row-images` | ✗ | 50.82% | 93.73% | -42.92 |
-| `tooltip-skipped` | ✗ | 43.78% | 86.63% | -42.85 |
 | `inline-vs-block` | ✗ | 55.46% | 97.96% | -42.50 |
+| `adjacent-tables` | ✗ | 54.70% | 96.09% | -41.39 |
 | `table-mismatched-cells` | ✗ | 57.20% | 96.12% | -38.92 |
 | `simple-table-2x2` | ✗ | 57.99% | 95.82% | -37.83 |
 | `simple-table-3col` | ✗ | 59.25% | 96.21% | -36.96 |
 | `mixed-margins-paddings` | ✗ | 62.11% | 94.76% | -32.65 |
-| `adjacent-tables` | ✗ | 54.70% | 85.38% | -30.68 |
 | `unordered-list-square` | ✗ | 69.16% | 96.06% | -26.90 |
 | `table-row-backgrounds` | ✗ | 72.19% | 98.70% | -26.51 |
 | `simple-unordered-list` | ✗ | 70.00% | 96.49% | -26.49 |

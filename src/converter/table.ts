@@ -638,8 +638,11 @@ function cellParagraph(
     ? collectInlineRunsFromNodes(content, typography, undefined, styleResolver)
     : [new TextRun("")];
   const hasImage = nodesContainImage(content);
+  // Browsers center `<th>` by default (UA `th { text-align: center }`); an explicit
+  // text-align / align attr still wins.
+  const textAlign = css.textAlign ?? (cell.element.name.toLowerCase() === "th" ? "center" : undefined);
   return new Paragraph({
-    ...(css.textAlign ? { alignment: mapTextAlign(css.textAlign) } : {}),
+    ...(textAlign ? { alignment: mapTextAlign(textAlign) } : {}),
     spacing: hasImage
       ? { before: 0, after: 0 }
       : {
@@ -679,7 +682,11 @@ function cellBlockParagraph(
     ...(isHeading ? { bold: true } : {}),
     fontSize,
   };
-  const align = blockCss.textAlign ?? cellCss.textAlign;
+  // UA default: browsers center `<th>` content (explicit alignment still wins).
+  const align =
+    blockCss.textAlign ??
+    cellCss.textAlign ??
+    (cell.element.name.toLowerCase() === "th" ? "center" : undefined);
   const hasImage = nodesContainImage(element.children ?? []);
 
   // UA default `<p>` margins (1em of the paragraph's font), same as body flow:

@@ -190,9 +190,12 @@ export function htmlFragmentDisplayText(
 ): string {
   const $ = cheerio.load(`<body>${html.trim()}</body>`, { xml: false });
 
-  // Browsers don't display hidden subtrees (display:none, preheader idioms) —
-  // exclude them from the EXPECTED text, matching the converter's skip.
-  $("[style]").each((_, el) => {
+  // Browsers don't display hidden subtrees (display:none, preheader idioms) or
+  // transient overlays (closed dialogs, tooltips) — exclude them from the EXPECTED
+  // text, matching the converter's skip. Check every element, not just `[style]`:
+  // overlay semantics (`role="tooltip"`, `<dialog>`, `-dialog`/`-tooltip` components)
+  // hide without an inline style attribute.
+  $("*").each((_, el) => {
     if (el.type === "tag" && isHiddenElement(el)) $(el).remove();
   });
 
