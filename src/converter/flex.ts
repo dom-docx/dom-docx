@@ -51,7 +51,7 @@ export interface FlexItemContent {
   stackedContent?: boolean;
 }
 
-function elementPlainText(element: Element): string {
+export function elementPlainText(element: Element): string {
   const parts: string[] = [];
   function walk(nodes: AnyNode[]): void {
     for (const node of nodes) {

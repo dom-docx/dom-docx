@@ -1,8 +1,10 @@
 import {
   AlignmentType,
   BorderStyle,
+  ImageRun,
   LineRuleType,
   Paragraph,
+  Table,
   TabStopType,
   TextRun,
   type FileChild,
@@ -41,6 +43,7 @@ import {
 } from "./css.js";
 import { makeBorderedTableBlock, makeShadedBlockTable, makeShadedContainerTable, needsShadedTableWrapper, shouldUseBorderedTable } from "./bordered-block.js";
 import {
+  elementPlainText,
   flexItemElements,
   estimateFlexItemWidthTwips,
   isFlexContainer,
@@ -333,6 +336,22 @@ function makeParagraph(
   const padRight = layout.paddingRight ?? 0;
   const isListItem = Boolean(extra.numbering);
 
+  // An image in the document flow needs breathing room from adjacent blocks. Web
+  // layouts separate figures with margins the computed path faithfully zeroes (flex/grid
+  // `gap`, container padding), leaving the flat docx with the image smashed against the
+  // next heading/paragraph. Floor an image paragraph's before/after spacing to ~0.5em (a
+  // larger real margin still wins). Skipped for flex-card content, which manages its own
+  // tight rhythm (it would otherwise inflate).
+  const hasImage = children.some((c) => c instanceof ImageRun);
+  const spacingLayout =
+    hasImage && !isShaded && !isListItem && !extra.flexContent
+      ? {
+          ...layout,
+          spacingBefore: Math.max(layout.spacingBefore ?? 0, pxToTwips(8)),
+          spacingAfter: Math.max(layout.spacingAfter ?? 0, pxToTwips(8)),
+        }
+      : layout;
+
   const layoutProps = blockLayoutToParagraphProps(
     isShaded
       ? {
@@ -342,7 +361,7 @@ function makeParagraph(
           indentLeft: undefined,
           indentRight: padRight > 0 ? padRight : undefined,
         }
-      : layout,
+      : spacingLayout,
   );
 
   let paragraphChildren =
@@ -575,6 +594,8 @@ function emitFlowBlocks(
           ...extra,
           hasLineBreaks,
           exactLineTwips,
+          // Flex-card content manages its own tight vertical rhythm — never image-floor it.
+          flexContent: ctx.flexBlockContent,
           ...(mediaTwips > 0
             ? { atLeastLineTwips: Math.max(textLineTwips, mediaTwips) }
             : inheritedTypography.fontSize
@@ -755,6 +776,25 @@ function processFlexContainer(
   // content is hidden/lazy in the export; all that survives is the container's
   // background-color, which otherwise becomes a bare colored box (the "blue box").
   if (items.length === 0) return [];
+
+  // Likewise, a flex container whose items carry NO visible content — no text, no
+  // media, no fill, no border on container or items — emits a bare empty table
+  // (icon-only web-component chrome, e.g. a table widget's expand control whose glyph
+  // is in shadow DOM). Beyond being noise, an empty sliver table is destructive: docx
+  // merges adjacent sibling tables, so a 600-twip empty table emitted right after a
+  // real data table fuses with it and collapses the data table to sliver width.
+  const containerVisible =
+    Boolean(containerLayout.shading?.fill) || Boolean(containerLayout.borders);
+  const hasVisibleContent =
+    containerVisible ||
+    flexItemElements(element, ctx.styleResolver).some((item) => {
+      if (elementPlainText(item).length > 0) return true;
+      if (flexItemHasRasterMedia(item)) return true;
+      if (item.name.toLowerCase() === "svg" || $(item).find("svg").length > 0) return true;
+      const itemCss = cssToBlockLayout(ctx.styleResolver.getCss(item));
+      return Boolean(itemCss.shading?.fill) || Boolean(itemCss.borders);
+    });
+  if (!hasVisibleContent) return [];
 
   const table =
     flex.direction === "column"
@@ -1345,6 +1385,29 @@ export function visitNodes(
   return blocks;
 }
 
+/**
+ * docx merges adjacent sibling tables into ONE table (Word/LibreOffice both do this),
+ * which destroys layout: a narrow table emitted right after a wide data table fuses
+ * with it and collapses the data table to the narrow grid. Insert an invisible
+ * 1-twip-line separator paragraph between consecutive tables so each keeps its own
+ * grid. (Tables separated by real content or margin spacers are already safe.)
+ */
+function separateAdjacentTables(blocks: FileChild[]): FileChild[] {
+  const out: FileChild[] = [];
+  for (const block of blocks) {
+    if (out.length > 0 && out[out.length - 1] instanceof Table && block instanceof Table) {
+      out.push(
+        new Paragraph({
+          spacing: { before: 0, after: 0, line: 1, lineRule: LineRuleType.EXACT },
+          children: [],
+        }),
+      );
+    }
+    out.push(block);
+  }
+  return out;
+}
+
 export function htmlToDocxBlocks(
   $: CheerioAPI,
   styleResolver: StyleResolver = INLINE_STYLE_RESOLVER,
@@ -1352,7 +1415,7 @@ export function htmlToDocxBlocks(
 ): FileChild[] {
   const ctx: VisitorContext = { ...DEFAULT_VISITOR_CONTEXT, styleResolver, defaultSizeHalfPoints };
   const nodes = $("body").contents().toArray();
-  const blocks = visitNodes($, nodes, ctx);
+  const blocks = separateAdjacentTables(visitNodes($, nodes, ctx));
 
   if (blocks.length === 0) {
     return [new Paragraph({ children: [new TextRun("")] })];

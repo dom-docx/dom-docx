@@ -158,6 +158,24 @@ const docx = await convertHtmlToDocx(html);</code></pre>
     `,
   },
   {
+    name: "adjacent-tables",
+    description: "Two sibling tables with nothing between them — must not merge into one",
+    // docx merges adjacent sibling tables into ONE table (Word + LibreOffice), so a
+    // narrow table emitted right after a wide one fused with it and collapsed the wide
+    // table to sliver width (RHEL docs: an empty icon-chrome table after each data
+    // table smashed the data table to ~1 char). A separator paragraph now keeps them
+    // apart; if it regresses, the merged render diverges hard from the browser.
+    html: `
+      <table border="1" cellpadding="4" style="border-collapse:collapse;width:100%">
+        <tr><th>Device type</th><th>Kernel name</th><th>Symlink base</th></tr>
+        <tr><td>nvme</td><td>/dev/nvme*</td><td>by-id</td></tr>
+      </table>
+      <table border="1" cellpadding="4" style="border-collapse:collapse;width:100%">
+        <tr><td>second table</td><td>two columns</td></tr>
+      </table>
+    `,
+  },
+  {
     name: "table-colgroup-widths",
     description: "Column widths from `<colgroup>` (wide first column, short cells) + a colspan section row",
     // The first column is fixed at 50% by `<colgroup>` despite holding text no longer

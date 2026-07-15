@@ -68,7 +68,7 @@ npm run score:calibration -- --full
 
 ### 3. Guards — binary pass/fail invariants
 
-Each writes a result to `output/guards/<id>.json` (via `tools/guard-result.ts`, or an inlined equivalent in `scripts/pack-smoke.mjs` since it runs via plain `node`); `docs:sync` reads whichever are present into a single status table in BENCHMARK.md. `guard:inline`, `guard:config`, `guard:toc-slot`, `guard:internal-href`, `guard:document-canvas`, and `guard:pack-smoke` need no Playwright/LibreOffice and run in CI (`guard:document-canvas` also runs an optional Playwright section when Chromium is installed); the remaining ones need Playwright/LibreOffice and are maintainer-only.
+Each writes a result to `output/guards/<id>.json` (via `tools/guard-result.ts`, or an inlined equivalent in `scripts/pack-smoke.mjs` since it runs via plain `node`); `docs:sync` reads whichever are present into a single status table in BENCHMARK.md. `guard:inline`, `guard:config`, `guard:toc-slot`, `guard:internal-href`, `guard:document-canvas`, `guard:image-spacing`, and `guard:pack-smoke` need no Playwright/LibreOffice and run in CI (`guard:document-canvas` also runs an optional Playwright section when Chromium is installed); the remaining ones need Playwright/LibreOffice and are maintainer-only.
 
 - **`guard:inline`** — converts every case via default options and via explicit `{ styleSource: "inline" }`; asserts byte-identical normalized `word/*.xml`. Catches accidental drift in the default path.
 - **`guard:config`** — a battery of named assertions (one per `DocumentConfig` field — `pageSize`, `margins`, `defaultFont`, `metadata`, `headerHtml`/`footerHtml`, `pageNumber`, `lang`/`direction`, `coverHtml`, `tocHtml`, …) that each produces the correct OOXML. **Runs every assertion through both public entries** — the Node `convertHtmlToDocx` and the browser `convertHtmlToDocxUint8Array` (its inline path runs headless) — because option forwarding is duplicated per entry and has drifted before (a new option reaching one entry but not the other, with no compiler error).
@@ -79,6 +79,7 @@ Each writes a result to `output/guards/<id>.json` (via `tools/guard-result.ts`, 
 - **`guard:toc-slot`** — structural test for the `tocHtml` option (caller-provided table of contents). Asserts the slot fragment renders after the cover and before the body; that its in-page links (`<a href="#id">`) become internal hyperlinks pointing at real `id` bookmarks in the body; the cover → toc → body ordering; and OOXML schema validity of the whole document. (In-page linking itself is covered by `guard:internal-href`.)
 - **`guard:internal-href`** — structural test for same-document links (`href="#id"`). Asserts internal hyperlinks (`w:hyperlink w:anchor`), matching bookmarks on `id` / legacy `a[name]` targets, URI-decoded fragments, that external URLs still use relationships, and OOXML schema validity. CI — no Playwright/LibreOffice.
 - **`guard:document-canvas`** — DOCX exports must not follow dark-theme text colors. Asserts near-white computed `color` with no dark fill is dropped (so Word doesn’t get invisible light-on-white runs), while light text on a dark shaded block is kept; plus an optional Playwright check that the Node computed path forces `prefers-color-scheme: light`. CI for the remap/OOXML checks.
+- **`guard:image-spacing`** — image paragraphs keep a floor of before/after spacing so figures don’t smash into the next heading or body when web margins were zeroed (flex/grid gap layouts). Skipped inside flex cards. CI — no Playwright/LibreOffice.
 
 ```bash
 npm run guard:inline             # CI
@@ -86,6 +87,7 @@ npm run guard:config             # CI
 npm run guard:toc-slot           # CI
 npm run guard:internal-href      # CI
 npm run guard:document-canvas    # CI (Playwright section optional)
+npm run guard:image-spacing      # CI
 npm run guard:pack-smoke         # CI
 npm run guard:page-break         # structural page breaks (needs LibreOffice)
 npm run guard:computed-parity    # maintainer-only, needs Playwright
@@ -128,7 +130,7 @@ Scoring methodology: [docs/SCORING.md](./docs/SCORING.md). HTML authoring guide:
 
 ## Release to npm
 
-CI (`.github/workflows/ci.yml`) runs on every push/PR: typecheck, build, browser bundle, `guard:inline`, `guard:config`, `guard:toc-slot`, `guard:internal-href`, `guard:document-canvas`, and `guard:pack-smoke` — no Playwright or LibreOffice.
+CI (`.github/workflows/ci.yml`) runs on every push/PR: typecheck, build, browser bundle, `guard:inline`, `guard:config`, `guard:toc-slot`, `guard:internal-href`, `guard:document-canvas`, `guard:image-spacing`, and `guard:pack-smoke` — no Playwright or LibreOffice.
 
 Publishing uses **npm Trusted Publishing (OIDC)** — there is no `NPM_TOKEN` secret. The publish workflow (`.github/workflows/publish.yml`) runs when a semver tag matching `v*.*.*` is pushed to GitHub. It verifies the tag matches `"version"` in `package.json`, re-runs the same CI checks as above, then runs `npm publish --provenance --access public` (`prepack` builds the library and browser bundle).
 

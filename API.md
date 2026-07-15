@@ -689,6 +689,7 @@ These exercise the API and write artifacts under `output/`:
 | `npm run guard:toc-slot` | `tocHtml` slot placement + in-page links + schema |
 | `npm run guard:internal-href` | Same-document `href="#id"` → internal hyperlink + bookmark |
 | `npm run guard:document-canvas` | Dark-theme colors remapped for light DOCX canvas |
+| `npm run guard:image-spacing` | Image paragraph spacing floor so figures aren’t flush against neighbors |
 | `npm run score:benchmark` | OSS html-to-docx / TurboDocx comparison |
 | `npm run build:browser` | esbuild → `dist/browser/dom-docx.browser.js` |
 | `npm run typecheck` | TypeScript compile check |
