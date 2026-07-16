@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## 0.1.12
+
+Add Related Projects section to README.
+
 ## 0.1.11
 
 ### Fixed
