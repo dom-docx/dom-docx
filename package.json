@@ -1,6 +1,6 @@
 {
   "name": "dom-docx",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "Convert semantic HTML fragments to native, editable Word documents (OOXML)",
   "license": "MIT",
   "author": "Blair Googer",
