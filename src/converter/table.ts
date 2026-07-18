@@ -905,6 +905,25 @@ function buildTableCell(
 ): TableCell {
   const span = cell.colspan;
   const borders = cellStyleBorders(cell, styleResolver);
+  // CSS `padding` on the cell itself → per-side cell margins (`w:tcMar`); the table's
+  // `cellpadding` attribute fills any side the cell doesn't set. Read the cell's own
+  // CSS (not the row-merged view) so an invalid `<tr style="padding">` doesn't leak in.
+  const cellCss = styleResolver.getCss(cell.element);
+  const hasCssPadding =
+    cellCss.paddingTop !== undefined ||
+    cellCss.paddingRight !== undefined ||
+    cellCss.paddingBottom !== undefined ||
+    cellCss.paddingLeft !== undefined;
+  const margins = hasCssPadding
+    ? {
+        top: cellCss.paddingTop ?? cellPadding ?? 0,
+        bottom: cellCss.paddingBottom ?? cellPadding ?? 0,
+        left: cellCss.paddingLeft ?? cellPadding ?? 0,
+        right: cellCss.paddingRight ?? cellPadding ?? 0,
+      }
+    : cellPadding
+      ? { top: cellPadding, bottom: cellPadding, left: cellPadding, right: cellPadding }
+      : undefined;
   return new TableCell({
     columnSpan: span > 1 ? span : undefined,
     rowSpan: cell.rowspan > 1 ? cell.rowspan : undefined,
@@ -912,9 +931,7 @@ function buildTableCell(
       size: sumColumnWidths(columnWidths, columnIndex, span),
       type: WidthType.DXA,
     },
-    margins: cellPadding
-      ? { top: cellPadding, bottom: cellPadding, left: cellPadding, right: cellPadding }
-      : undefined,
+    margins,
     shading: cellShading(cell, styleResolver),
     ...(borders ? { borders } : {}),
     children: cellBlocks($, cell, columnIndex, columnWidths, styleResolver, cellPadding),

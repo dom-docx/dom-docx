@@ -32,6 +32,12 @@ function parseLengthPx(value: string | undefined): number | undefined {
   if (trimmed.endsWith("px")) return pxToTwips(parseFloat(trimmed));
   if (trimmed.endsWith("pt")) return Math.round(parseFloat(trimmed) * 20);
   if (trimmed.endsWith("em")) return pxToTwips(parseFloat(trimmed) * 16);
+  // Physical units → twips (mostly moot here: getComputedStyle resolves to px — kept
+  // consistent with the inline parseLength). mm=1440/25.4, cm=×10, in=1440, pc=240.
+  if (trimmed.endsWith("mm")) return Math.round(parseFloat(trimmed) * (1440 / 25.4));
+  if (trimmed.endsWith("cm")) return Math.round(parseFloat(trimmed) * (14400 / 25.4));
+  if (trimmed.endsWith("in")) return Math.round(parseFloat(trimmed) * 1440);
+  if (trimmed.endsWith("pc")) return Math.round(parseFloat(trimmed) * 240);
   const num = parseFloat(trimmed);
   return Number.isFinite(num) ? pxToTwips(num) : undefined;
 }

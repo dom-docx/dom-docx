@@ -60,11 +60,14 @@ export function typographyToTextRunOptions(
   style: RunTypography,
   defaultSize: number = BODY_FONT_HALF_POINTS,
 ): Record<string, unknown> {
-  const defaultColor = style.style === "Hyperlink" ? HYPERLINK_COLOR : "111111";
+  const defaultColor = style.style === "Hyperlink" ? HYPERLINK_COLOR : undefined;
+  const resolvedColor = style.color ?? defaultColor;
   const options: Record<string, unknown> = {
     size: style.fontSize ?? defaultSize,
-    color: style.color ?? defaultColor,
   };
+  if (resolvedColor) {
+    options.color = resolvedColor;
+  }
   if (style.bold) options.bold = true;
   if (style.italics) options.italics = true;
   if (style.allCaps) options.allCaps = true;

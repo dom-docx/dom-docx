@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Changed
+
+- **Default text color now uses Word's `auto` instead of a forced near-black.** Text with no explicit CSS color previously had `#111111` stamped on every run; it now omits the run color so Word/LibreOffice apply their default (which renders black, and adapts to the background). This is more native and fixes a latent bug: a dark-background block whose text had no explicit color rendered dark-on-dark (invisible) — `auto` renders it light-on-dark. Hyperlinks keep their link color. (From a community patch.)
+
+### Fixed
+
+- **CSS `padding` on a table cell is now applied.** Previously only the table's `cellpadding` attribute set cell margins, so `<td style="padding:16px">` produced no `w:tcMar` and rendered flush. Per-side CSS padding on a `<td>`/`<th>` now becomes cell margins, with the table `cellpadding` attribute filling any side the cell doesn't set. Suite case: `table-cell-padding`. (From a community patch.)
+- **Physical CSS length units (`mm`, `cm`, `in`, `pc`) are now parsed correctly.** They previously fell through to the bare-number branch and were treated as pixels, so `10mm` came out as `10px` (~2.6mm — about 3.85× too small); `in`/`pc` had the same silent mis-parse. All four now convert to the correct twip lengths (exact factors: 1440 twips/inch, 25.4mm/inch), in both the inline and computed length parsers. Suite case: `css-length-units`. (From a community patch.)
+
 ## 0.1.12
 
 Add Related Projects section to README.

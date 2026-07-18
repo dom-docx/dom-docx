@@ -15,25 +15,25 @@ All libraries use the **same visual harness**: human-validated layout fidelity p
 
 ---
 
-## Suite summary (42 cases)
+## Suite summary (44 cases)
 
 | Metric | html-to-docx | @turbodocx/html-to-docx | dom-docx |
 |--------|---:|---:|---:|
-| XML schema pass | 0 / 42 | 0 / 42 | **42 / 42** |
-| Avg **visual (layout-based)** | 64.56% | 65.61% | **96.27%** |
-| Avg editability | 100.00 | 100.00 | 99.29 |
-| Avg engine score | 82.16 | 82.22 | **95.35** |
-| Avg compile | 11.7 ms | 17.2 ms | 41.9 ms |
+| XML schema pass | 0 / 44 | 0 / 44 | **44 / 44** |
+| Avg **visual (layout-based)** | 64.31% | 65.37% | **96.37%** |
+| Avg editability | 100.00 | 100.00 | 99.32 |
+| Avg engine score | 81.90 | 81.91 | **94.33** |
+| Avg compile | 13.1 ms | 19.7 ms | 50.7 ms |
 
 Δ vs dom-docx (library − dom-docx):
 
 | Library | Δ visual | Δ engine |
 |---------|---------:|---------:|
-| html-to-docx | **-31.72** | -13.19 |
-| @turbodocx/html-to-docx | **-30.67** | -13.13 |
+| html-to-docx | **-32.06** | -12.43 |
+| @turbodocx/html-to-docx | **-31.00** | -12.43 |
 
-**dom-docx wins 39 / 42 cases** against html-to-docx (higher layout-based visual score).
-**dom-docx wins 35 / 42 cases** against @turbodocx/html-to-docx (higher layout-based visual score).
+**dom-docx wins 41 / 44 cases** against html-to-docx (higher layout-based visual score).
+**dom-docx wins 39 / 44 cases** against @turbodocx/html-to-docx (higher layout-based visual score).
 
 ---
 
@@ -41,101 +41,105 @@ All libraries use the **same visual harness**: human-validated layout fidelity p
 
 | Test | XML (html-to-docx) | html-to-docx visual | dom-docx visual | Δ (html-to-docx − dom-docx) |
 |------|:---:|-------:|-------:|--:|
-| `inline-svg-chart` | ✗ | 7.21% | 96.98% | -89.78 |
-| `nested-blockquotes-lists` | ✗ | 12.11% | 91.00% | -78.89 |
-| `rasterize-in-place-chart` | ✗ | 24.49% | 98.91% | -74.42 |
+| `inline-svg-chart` | ✗ | 7.21% | 97.03% | -89.83 |
+| `nested-blockquotes-lists` | ✗ | 12.11% | 91.48% | -79.37 |
+| `rasterize-in-place-chart` | ✗ | 24.49% | 99.20% | -74.71 |
 | `image-figure` | ✗ | 29.30% | 99.33% | -70.03 |
-| `table-row-backgrounds` | ✗ | 29.81% | 98.70% | -68.89 |
+| `table-row-backgrounds` | ✗ | 29.81% | 98.73% | -68.92 |
+| `admonition-note` | ✗ | 33.30% | 97.97% | -64.67 |
 | `typography-colors` | ✗ | 26.47% | 90.35% | -63.88 |
-| `admonition-note` | ✗ | 33.30% | 97.04% | -63.74 |
-| `flex-column-vertical` | ✗ | 38.65% | 98.16% | -59.51 |
-| `borderless-table` | ✗ | 39.12% | 96.70% | -57.58 |
-| `tooltip-skipped` | ✗ | 39.14% | 96.32% | -57.18 |
-| `table-cell-bar-divs` | ✗ | 43.62% | 98.67% | -55.05 |
-| `table-colgroup-widths` | ✗ | 47.29% | 96.63% | -49.34 |
-| `unicode-emoji-content` | ✗ | 49.01% | 96.30% | -47.29 |
-| `flex-row-horizontal` | ✗ | 51.89% | 97.41% | -45.52 |
-| `mixed-margins-paddings` | ✗ | 52.79% | 94.76% | -41.97 |
+| `flex-column-vertical` | ✗ | 38.65% | 98.19% | -59.54 |
+| `table-cell-bar-divs` | ✗ | 43.62% | 98.74% | -55.12 |
+| `borderless-table` | ✗ | 39.12% | 91.55% | -52.43 |
+| `tooltip-skipped` | ✗ | 39.14% | 90.48% | -51.34 |
+| `table-colgroup-widths` | ✗ | 47.29% | 97.59% | -50.30 |
+| `unicode-emoji-content` | ✗ | 49.01% | 95.05% | -46.04 |
+| `flex-row-horizontal` | ✗ | 51.89% | 97.28% | -45.39 |
+| `mixed-margins-paddings` | ✗ | 52.79% | 95.68% | -42.89 |
+| `css-length-units` | ✗ | 55.60% | 97.00% | -41.40 |
 | `flex-row-images` | ✗ | 53.34% | 93.73% | -40.40 |
-| `adjacent-tables` | ✗ | 57.23% | 96.09% | -38.86 |
-| `inline-vs-block` | ✗ | 60.26% | 97.96% | -37.70 |
-| `table-mismatched-cells` | ✗ | 60.64% | 96.12% | -35.48 |
-| `simple-table-2x2` | ✗ | 61.99% | 95.82% | -33.83 |
-| `simple-table-3col` | ✗ | 64.10% | 96.21% | -32.11 |
-| `horizontal-rule` | ✗ | 66.12% | 93.08% | -26.96 |
-| `modal-dialog-skipped` | ✗ | 71.93% | 94.75% | -22.82 |
-| `pre-code-block` | ✗ | 74.85% | 96.92% | -22.07 |
-| `heading-hierarchy` | ✗ | 75.33% | 96.51% | -21.18 |
-| `simple-unordered-list` | ✗ | 77.16% | 96.49% | -19.33 |
-| `inline-backgrounds` | ✗ | 83.65% | 96.95% | -13.30 |
-| `paragraph-and-list` | ✗ | 84.12% | 96.20% | -12.08 |
-| `multiple-links` | ✗ | 86.24% | 95.80% | -9.56 |
-| `basic-inline-formatting` | ✗ | 86.93% | 96.33% | -9.40 |
-| `unordered-list-square` | ✗ | 86.71% | 96.06% | -9.35 |
-| `paragraph-with-line-break` | ✗ | 86.87% | 95.42% | -8.55 |
-| `ordered-list-rich-inline` | ✗ | 90.66% | 97.24% | -6.58 |
-| `multiple-paragraphs` | ✗ | 93.43% | 96.42% | -2.99 |
-| `ordered-list-upper-roman` | ✗ | 93.44% | 96.24% | -2.80 |
-| `simple-blockquote` | ✗ | 93.88% | 96.54% | -2.66 |
-| `ordered-list-lower-alpha` | ✗ | 94.31% | 96.45% | -2.14 |
-| `simple-ordered-list` | ✗ | 95.28% | 96.34% | -1.06 |
-| `image-block` | ✗ | 98.10% | 98.54% | -0.44 |
-| `simple-link` | ✗ | 96.61% | 96.05% | +0.56 |
-| `plain-paragraph` | ✗ | 96.98% | 95.96% | +1.02 |
-| `centered-paragraph` | ✗ | 96.99% | 95.93% | +1.06 |
+| `adjacent-tables` | ✗ | 57.23% | 96.94% | -39.71 |
+| `inline-vs-block` | ✗ | 60.26% | 98.35% | -38.09 |
+| `table-mismatched-cells` | ✗ | 60.64% | 97.34% | -36.70 |
+| `simple-table-2x2` | ✗ | 61.99% | 96.98% | -34.99 |
+| `table-cell-padding` | ✗ | 62.83% | 97.15% | -34.32 |
+| `simple-table-3col` | ✗ | 64.10% | 97.46% | -33.36 |
+| `horizontal-rule` | ✗ | 66.12% | 94.64% | -28.52 |
+| `modal-dialog-skipped` | ✗ | 71.93% | 95.15% | -23.22 |
+| `pre-code-block` | ✗ | 74.85% | 97.16% | -22.31 |
+| `simple-unordered-list` | ✗ | 77.16% | 97.27% | -20.11 |
+| `heading-hierarchy` | ✗ | 75.33% | 91.56% | -16.23 |
+| `inline-backgrounds` | ✗ | 83.65% | 97.77% | -14.12 |
+| `paragraph-and-list` | ✗ | 84.12% | 97.01% | -12.89 |
+| `multiple-links` | ✗ | 86.24% | 96.59% | -10.35 |
+| `basic-inline-formatting` | ✗ | 86.93% | 97.24% | -10.31 |
+| `unordered-list-square` | ✗ | 86.71% | 96.89% | -10.18 |
+| `paragraph-with-line-break` | ✗ | 86.87% | 96.29% | -9.42 |
+| `multiple-paragraphs` | ✗ | 93.43% | 97.31% | -3.88 |
+| `ordered-list-upper-roman` | ✗ | 93.44% | 97.12% | -3.68 |
+| `simple-blockquote` | ✗ | 93.88% | 97.44% | -3.56 |
+| `ordered-list-rich-inline` | ✗ | 90.66% | 93.75% | -3.09 |
+| `ordered-list-lower-alpha` | ✗ | 94.31% | 97.30% | -2.99 |
+| `simple-ordered-list` | ✗ | 95.28% | 97.24% | -1.96 |
+| `image-block` | ✗ | 98.10% | 98.75% | -0.65 |
+| `simple-link` | ✗ | 96.61% | 96.49% | +0.12 |
+| `plain-paragraph` | ✗ | 96.98% | 96.84% | +0.14 |
+| `centered-paragraph` | ✗ | 96.99% | 96.81% | +0.18 |
 
 ### @turbodocx/html-to-docx vs dom-docx — per case
 
 | Test | XML (@turbodocx/html-to-docx) | @turbodocx/html-to-docx visual | dom-docx visual | Δ (@turbodocx/html-to-docx − dom-docx) |
 |------|:---:|-------:|-------:|--:|
-| `inline-svg-chart` | ✗ | 9.83% | 96.98% | -87.15 |
-| `nested-blockquotes-lists` | ✗ | 11.51% | 91.00% | -79.49 |
-| `rasterize-in-place-chart` | ✗ | 25.97% | 98.91% | -72.94 |
+| `inline-svg-chart` | ✗ | 9.83% | 97.03% | -87.20 |
+| `nested-blockquotes-lists` | ✗ | 11.51% | 91.48% | -79.97 |
+| `rasterize-in-place-chart` | ✗ | 25.97% | 99.20% | -73.23 |
 | `image-figure` | ✗ | 30.48% | 99.33% | -68.85 |
-| `admonition-note` | ✗ | 33.62% | 97.04% | -63.42 |
-| `flex-column-vertical` | ✗ | 37.49% | 98.16% | -60.67 |
-| `tooltip-skipped` | ✗ | 38.42% | 96.32% | -57.90 |
+| `admonition-note` | ✗ | 33.62% | 97.97% | -64.35 |
+| `flex-column-vertical` | ✗ | 37.49% | 98.19% | -60.70 |
 | `typography-colors` | ✗ | 35.86% | 90.35% | -54.49 |
-| `table-colgroup-widths` | ✗ | 44.72% | 96.63% | -51.91 |
-| `flex-row-horizontal` | ✗ | 46.38% | 97.41% | -51.03 |
-| `modal-dialog-skipped` | ✗ | 45.51% | 94.75% | -49.24 |
-| `borderless-table` | ✗ | 49.51% | 96.70% | -47.19 |
+| `table-colgroup-widths` | ✗ | 44.72% | 97.59% | -52.87 |
+| `tooltip-skipped` | ✗ | 38.42% | 90.48% | -52.06 |
+| `flex-row-horizontal` | ✗ | 46.38% | 97.28% | -50.90 |
+| `modal-dialog-skipped` | ✗ | 45.51% | 95.15% | -49.64 |
 | `flex-row-images` | ✗ | 50.82% | 93.73% | -42.92 |
-| `inline-vs-block` | ✗ | 55.46% | 97.96% | -42.50 |
-| `adjacent-tables` | ✗ | 54.70% | 96.09% | -41.39 |
-| `table-mismatched-cells` | ✗ | 57.20% | 96.12% | -38.92 |
-| `simple-table-2x2` | ✗ | 57.99% | 95.82% | -37.83 |
-| `simple-table-3col` | ✗ | 59.25% | 96.21% | -36.96 |
-| `mixed-margins-paddings` | ✗ | 62.11% | 94.76% | -32.65 |
-| `unordered-list-square` | ✗ | 69.16% | 96.06% | -26.90 |
-| `table-row-backgrounds` | ✗ | 72.19% | 98.70% | -26.51 |
-| `simple-unordered-list` | ✗ | 70.00% | 96.49% | -26.49 |
-| `ordered-list-lower-alpha` | ✗ | 69.97% | 96.45% | -26.48 |
-| `ordered-list-upper-roman` | ✗ | 69.97% | 96.24% | -26.27 |
-| `image-block` | ✗ | 74.17% | 98.54% | -24.37 |
-| `paragraph-and-list` | ✗ | 72.59% | 96.20% | -23.61 |
-| `horizontal-rule` | ✗ | 72.33% | 93.08% | -20.75 |
-| `pre-code-block` | ✗ | 77.42% | 96.92% | -19.50 |
-| `unicode-emoji-content` | ✗ | 77.67% | 96.30% | -18.63 |
-| `heading-hierarchy` | ✗ | 78.34% | 96.51% | -18.17 |
-| `table-cell-bar-divs` | ✗ | 89.32% | 98.67% | -9.35 |
-| `ordered-list-rich-inline` | ✗ | 93.97% | 97.24% | -3.27 |
-| `simple-ordered-list` | ✗ | 93.28% | 96.34% | -3.06 |
-| `simple-blockquote` | ✗ | 93.82% | 96.54% | -2.72 |
-| `inline-backgrounds` | ✗ | 96.67% | 96.95% | -0.28 |
-| `multiple-paragraphs` | ✗ | 96.87% | 96.42% | +0.45 |
-| `simple-link` | ✗ | 96.61% | 96.05% | +0.56 |
-| `multiple-links` | ✗ | 96.50% | 95.80% | +0.70 |
-| `basic-inline-formatting` | ✗ | 97.10% | 96.33% | +0.77 |
-| `plain-paragraph` | ✗ | 96.98% | 95.96% | +1.02 |
-| `centered-paragraph` | ✗ | 96.99% | 95.93% | +1.06 |
-| `paragraph-with-line-break` | ✗ | 96.73% | 95.42% | +1.31 |
+| `inline-vs-block` | ✗ | 55.46% | 98.35% | -42.89 |
+| `adjacent-tables` | ✗ | 54.70% | 96.94% | -42.24 |
+| `borderless-table` | ✗ | 49.51% | 91.55% | -42.04 |
+| `table-mismatched-cells` | ✗ | 57.20% | 97.34% | -40.14 |
+| `simple-table-2x2` | ✗ | 57.99% | 96.98% | -38.99 |
+| `simple-table-3col` | ✗ | 59.25% | 97.46% | -38.21 |
+| `css-length-units` | ✗ | 59.15% | 97.00% | -37.85 |
+| `table-cell-padding` | ✗ | 61.61% | 97.15% | -35.54 |
+| `mixed-margins-paddings` | ✗ | 62.11% | 95.68% | -33.57 |
+| `unordered-list-square` | ✗ | 69.16% | 96.89% | -27.73 |
+| `ordered-list-lower-alpha` | ✗ | 69.97% | 97.30% | -27.33 |
+| `simple-unordered-list` | ✗ | 70.00% | 97.27% | -27.27 |
+| `ordered-list-upper-roman` | ✗ | 69.97% | 97.12% | -27.15 |
+| `table-row-backgrounds` | ✗ | 72.19% | 98.73% | -26.54 |
+| `image-block` | ✗ | 74.17% | 98.75% | -24.58 |
+| `paragraph-and-list` | ✗ | 72.59% | 97.01% | -24.42 |
+| `horizontal-rule` | ✗ | 72.33% | 94.64% | -22.31 |
+| `pre-code-block` | ✗ | 77.42% | 97.16% | -19.74 |
+| `unicode-emoji-content` | ✗ | 77.67% | 95.05% | -17.38 |
+| `heading-hierarchy` | ✗ | 78.34% | 91.56% | -13.22 |
+| `table-cell-bar-divs` | ✗ | 89.32% | 98.74% | -9.42 |
+| `simple-ordered-list` | ✗ | 93.28% | 97.24% | -3.96 |
+| `simple-blockquote` | ✗ | 93.82% | 97.44% | -3.62 |
+| `inline-backgrounds` | ✗ | 96.67% | 97.77% | -1.10 |
+| `multiple-paragraphs` | ✗ | 96.87% | 97.31% | -0.44 |
+| `basic-inline-formatting` | ✗ | 97.10% | 97.24% | -0.14 |
+| `multiple-links` | ✗ | 96.50% | 96.59% | -0.09 |
+| `simple-link` | ✗ | 96.61% | 96.49% | +0.12 |
+| `plain-paragraph` | ✗ | 96.98% | 96.84% | +0.14 |
+| `centered-paragraph` | ✗ | 96.99% | 96.81% | +0.18 |
+| `ordered-list-rich-inline` | ✗ | 93.97% | 93.75% | +0.22 |
+| `paragraph-with-line-break` | ✗ | 96.73% | 96.29% | +0.44 |
 
 ### List comparison (layout-based visual)
 
 | Library | `simple-unordered-list` | `simple-ordered-list` | `ordered-list-rich-inline` | `paragraph-and-list` | `nested-blockquotes-lists` | `unicode-emoji-content` | `ordered-list-lower-alpha` | `ordered-list-upper-roman` | `unordered-list-square` |
 |---------|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| dom-docx | **96.49%** | **96.34%** | **97.24%** | **96.20%** | **91.00%** | **96.30%** | **96.45%** | **96.24%** | **96.06%** |
+| dom-docx | **97.27%** | **97.24%** | **93.75%** | **97.01%** | **91.48%** | **95.05%** | **97.30%** | **97.12%** | **96.89%** |
 | html-to-docx | 77.16% | 95.28% | 90.66% | 84.12% | 12.11% | 49.01% | 94.31% | 93.44% | 86.71% |
 | @turbodocx/html-to-docx | 70.00% | 93.28% | 93.97% | 72.59% | 11.51% | 77.67% | 69.97% | 69.97% | 69.16% |
 
@@ -180,7 +184,7 @@ Regenerate: `npm run score:css-cascade`.
 | Config options | ✅ | 80/80 checks passed (node + browser) | `npm run guard:config` |
 | Document canvas colors | ✅ | 17/17 structural checks | `npm run guard:document-canvas` |
 | Image spacing | ✅ | 5/5 flow images floored, flex images tight | `npm run guard:image-spacing` |
-| Inline path | ✅ | 42/42 equivalent (default vs explicit inline) | `npm run guard:inline` |
+| Inline path | ✅ | 44/44 equivalent (default vs explicit inline) | `npm run guard:inline` |
 | Internal hrefs | ✅ | 16/16 structural checks | `npm run guard:internal-href` |
 | Pack smoke | ✅ | 1/1 library + CLI + browser entry install and convert | `npm run guard:pack-smoke` |
 | Page breaks | ✅ | 9/9 OOXML + multi-page PDF + computed | `npm run guard:page-break` |

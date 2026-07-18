@@ -202,6 +202,21 @@ const docx = await convertHtmlToDocx(html);</code></pre>
     `,
   },
   {
+    name: "css-length-units",
+    description: "Physical CSS length units (mm, cm, in, pc) — indents/padding at real distances",
+    // Browsers resolve mm/cm/in/pc natively, so this is a scorable oracle: a regression
+    // that mis-parses a physical unit as px collapses each indent to ~1/4 and the
+    // horizontal ink profile shifts hard. (mm/cm were silently ~3.85x too small before.)
+    html: `
+      <p>Baseline paragraph at the left margin.</p>
+      <p style="margin-left:20mm">Indented 20&nbsp;mm.</p>
+      <p style="margin-left:3cm">Indented 3&nbsp;cm.</p>
+      <p style="margin-left:1in">Indented 1&nbsp;inch.</p>
+      <p style="margin-left:6pc">Indented 6&nbsp;picas (= 1&nbsp;inch).</p>
+      <div style="background:#eef2ff;padding:1cm">A block padded 1&nbsp;cm on every side.</div>
+    `,
+  },
+  {
     name: "paragraph-with-line-break",
     description: "Address block with `<br>` tags",
     html: `
@@ -319,6 +334,27 @@ const EDGE_TEST_CASES: TestCase[] = [
         <tr><td>Alpha</td><td style="text-align:right">100</td></tr>
         <tr style="background:#f5f5f5"><td><strong>Subtotal</strong></td><td style="text-align:right"><strong>100</strong></td></tr>
         <tr><td>Beta</td><td style="text-align:right;color:#2a9d8f">+12%</td></tr>
+      </table>
+    `,
+  },
+  {
+    name: "table-cell-padding",
+    description: "Per-cell CSS `padding` overrides the table `cellpadding` (browser-native, scorable)",
+    // CSS padding on a `<td>`/`<th>` was dropped before — only the table `cellpadding`
+    // attribute applied. Columns are pinned 50/50 so padding is the only variable:
+    // a regression (padding lost) shrinks the roomy cells' row height and shifts the
+    // vertical profile. Short text avoids width-distribution wraps muddying the signal.
+    html: `
+      <table border="1" cellpadding="4" style="border-collapse:collapse;table-layout:fixed;width:100%">
+        <colgroup><col style="width:50%"><col style="width:50%"></colgroup>
+        <tr>
+          <td style="padding:20px">Roomy (20px)</td>
+          <td>Default (4px)</td>
+        </tr>
+        <tr>
+          <td>Default (4px)</td>
+          <td style="padding:20px">Roomy (20px)</td>
+        </tr>
       </table>
     `,
   },

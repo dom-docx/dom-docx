@@ -6,71 +6,73 @@ To generate suite metrics, run `npm run score:suite` then `npm run docs:sync`. *
 
 ## Summary
 
-| Metric | Standard (20) | Edge (22) | All (42) |
+| Metric | Standard (21) | Edge (23) | All (44) |
 |--------|---------------|-----------|----------|
-| XML schema pass | 20 / 20 | 22 / 22 | **42 / 42** |
-| Avg **visual (layout-based)** | 96.15% | 96.38% | **96.27%** |
-| Avg raw layout (pre-guards) | 96.15% | 96.53% | **96.35%** |
-| Avg pixel match (tripwire, unscored) | 88.42% | 93.14% | **90.89%** |
-| Avg engine score | 95.19 | 95.50 | **95.35** |
-| Avg compile | — | — | **41.9 ms** |
+| XML schema pass | 21 / 21 | 23 / 23 | **44 / 44** |
+| Avg **visual (layout-based)** | 96.55% | 96.20% | **96.37%** |
+| Avg raw layout (pre-guards) | 96.55% | 96.35% | **96.44%** |
+| Avg pixel match (tripwire, unscored) | 88.80% | 93.34% | **91.17%** |
+| Avg engine score | 93.59 | 95.01 | **94.33** |
+| Avg compile | — | — | **50.7 ms** |
 | Identity-pair calibration (full 10) | — | — | **mean 97.21% / min 96.42%** |
 
 Tables below use the **layout-based visual** score; misaligned px is the raw pixel tripwire.
 
 ---
 
-## Standard baseline (20)
+## Standard baseline (21)
 
 | Test | Description | XML | Visual | Misaligned px |
 |------|-------------|-----|--------|---------------|
-| `plain-paragraph` | Single unstyled `<p>` | ✓ | 95.96% | 1,359 |
-| `multiple-paragraphs` | Three sequential paragraphs | ✓ | 96.42% | 2,718 |
-| `heading-hierarchy` | h1 / h2 / h3 with body text | ✓ | 96.51% | 4,973 |
-| `simple-unordered-list` | Basic `<ul>` with 3 items | ✓ | 96.49% | 744 |
-| `simple-ordered-list` | Basic `<ol>` with 3 items | ✓ | 96.34% | 1,595 |
-| `ordered-list-rich-inline` | `<ol>` with `<strong>` + highlighted `<span>` per item | ✓ | 97.24% | 3,551 |
-| `paragraph-and-list` | Intro paragraph + `<ul>` | ✓ | 96.20% | 1,236 |
-| `simple-link` | One hyperlinked anchor | ✓ | 96.05% | 1,214 |
-| `multiple-links` | Two links in one sentence | ✓ | 95.80% | 1,278 |
-| `basic-inline-formatting` | `<strong>`, `<em>`, nested bold-italic | ✓ | 96.33% | 1,417 |
-| `pre-code-block` | Fenced `<pre><code>` + inline `<code>` | ✓ | 96.92% | 4,251 |
-| `simple-table-2x2` | 2-column table, header + one row | ✓ | 95.82% | 597 |
-| `simple-table-3col` | 3-column table, 3 rows | ✓ | 96.21% | 1,047 |
-| `adjacent-tables` | Two sibling tables with nothing between them — must not merge into one | ✓ | 96.09% | 2,145 |
-| `table-colgroup-widths` | Column widths from `<colgroup>` (wide first column, short cells) + a colspan section row | ✓ | 96.63% | 2,280 |
-| `paragraph-with-line-break` | Address block with `<br>` tags | ✓ | 95.42% | 2,107 |
-| `admonition-note` | Docs `note` admonition — box synthesized from class (browser styling via CSS) | ✓ | 97.04% | 5,195 |
-| `simple-blockquote` | Plain blockquote + paragraph | ✓ | 96.54% | 1,110 |
-| `centered-paragraph` | `text-align: center` | ✓ | 95.93% | 762 |
-| `horizontal-rule` | Content separated by `<hr>` | ✓ | 93.08% | 2,475 |
+| `plain-paragraph` | Single unstyled `<p>` | ✓ | 96.84% | 1,360 |
+| `multiple-paragraphs` | Three sequential paragraphs | ✓ | 97.31% | 2,741 |
+| `heading-hierarchy` | h1 / h2 / h3 with body text | ✓ | 91.56% | 5,900 |
+| `simple-unordered-list` | Basic `<ul>` with 3 items | ✓ | 97.27% | 739 |
+| `simple-ordered-list` | Basic `<ol>` with 3 items | ✓ | 97.24% | 1,582 |
+| `ordered-list-rich-inline` | `<ol>` with `<strong>` + highlighted `<span>` per item | ✓ | 93.75% | 3,634 |
+| `paragraph-and-list` | Intro paragraph + `<ul>` | ✓ | 97.01% | 1,239 |
+| `simple-link` | One hyperlinked anchor | ✓ | 96.49% | 1,218 |
+| `multiple-links` | Two links in one sentence | ✓ | 96.59% | 1,278 |
+| `basic-inline-formatting` | `<strong>`, `<em>`, nested bold-italic | ✓ | 97.24% | 1,425 |
+| `pre-code-block` | Fenced `<pre><code>` + inline `<code>` | ✓ | 97.16% | 4,240 |
+| `simple-table-2x2` | 2-column table, header + one row | ✓ | 96.98% | 589 |
+| `simple-table-3col` | 3-column table, 3 rows | ✓ | 97.46% | 1,038 |
+| `adjacent-tables` | Two sibling tables with nothing between them — must not merge into one | ✓ | 96.94% | 2,159 |
+| `table-colgroup-widths` | Column widths from `<colgroup>` (wide first column, short cells) + a colspan section row | ✓ | 97.59% | 2,239 |
+| `css-length-units` | Physical CSS length units (mm, cm, in, pc) — indents/padding at real distances | ✓ | 97.00% | 3,270 |
+| `paragraph-with-line-break` | Address block with `<br>` tags | ✓ | 96.29% | 2,105 |
+| `admonition-note` | Docs `note` admonition — box synthesized from class (browser styling via CSS) | ✓ | 97.97% | 5,182 |
+| `simple-blockquote` | Plain blockquote + paragraph | ✓ | 97.44% | 1,126 |
+| `centered-paragraph` | `text-align: center` | ✓ | 96.81% | 748 |
+| `horizontal-rule` | Content separated by `<hr>` | ✓ | 94.64% | 2,480 |
 
-## Edge cases (22)
+## Edge cases (23)
 
 | Test | Description | XML | Visual | Misaligned px |
 |------|-------------|-----|--------|---------------|
 | `typography-colors` | Foreground/background colors, mixed inline & block | ✓ | 90.35% | 4,706 |
-| `table-mismatched-cells` | Colspan, short rows, extra cells | ✓ | 96.12% | 1,341 |
-| `borderless-table` | Label/value table with `border:none` | ✓ | 96.70% | 2,285 |
-| `table-row-backgrounds` | Shaded `<tr>` bands | ✓ | 98.70% | 1,764 |
-| `nested-blockquotes-lists` | Nested quotes, `<ol>` inside `<ul>` | ✓ | 91.00% | 3,664 |
-| `inline-vs-block` | Spans, links, code, styled divs | ✓ | 97.96% | 3,697 |
-| `inline-backgrounds` | Multi-color inline highlights, bold in shaded span | ✓ | 96.95% | 2,992 |
-| `mixed-margins-paddings` | Asymmetric margin/padding, bordered box | ✓ | 94.76% | 5,415 |
-| `flex-row-horizontal` | `display:flex; flex-direction:row` — three columns with gap and wrapping content | ✓ | 97.41% | 16,616 |
-| `flex-column-vertical` | `display:flex; flex-direction:column` — stacked rows with gap | ✓ | 98.16% | 12,750 |
+| `table-mismatched-cells` | Colspan, short rows, extra cells | ✓ | 97.34% | 1,347 |
+| `borderless-table` | Label/value table with `border:none` | ✓ | 91.55% | 2,467 |
+| `table-row-backgrounds` | Shaded `<tr>` bands | ✓ | 98.73% | 1,764 |
+| `table-cell-padding` | Per-cell CSS `padding` overrides the table `cellpadding` (browser-native, scorable) | ✓ | 97.15% | 1,044 |
+| `nested-blockquotes-lists` | Nested quotes, `<ol>` inside `<ul>` | ✓ | 91.48% | 3,666 |
+| `inline-vs-block` | Spans, links, code, styled divs | ✓ | 98.35% | 3,691 |
+| `inline-backgrounds` | Multi-color inline highlights, bold in shaded span | ✓ | 97.77% | 2,988 |
+| `mixed-margins-paddings` | Asymmetric margin/padding, bordered box | ✓ | 95.68% | 5,443 |
+| `flex-row-horizontal` | `display:flex; flex-direction:row` — three columns with gap and wrapping content | ✓ | 97.28% | 16,655 |
+| `flex-column-vertical` | `display:flex; flex-direction:column` — stacked rows with gap | ✓ | 98.19% | 12,759 |
 | `flex-row-images` | Flex row of bordered cards each wrapping an `<img>` (LibreOffice overflow repro; no rasterize) | ✓ | 93.73% | 31,751 |
-| `inline-svg-chart` | Inline SVG bar chart → native DOCX bands | ✓ | 96.98% | 2,906 |
-| `rasterize-in-place-chart` | Complex SVG + canvas rasterized via `rasterizeInPlace` before conversion | ✓ | 98.91% | 3,273 |
-| `table-cell-bar-divs` | CSS bar divs inside table cells | ✓ | 98.67% | 5,857 |
-| `unicode-emoji-content` | Emoji in body text | ✓ | 96.30% | 3,586 |
-| `image-block` | `data:` URL `<img>` in a centered paragraph | ✓ | 98.54% | 1,417 |
+| `inline-svg-chart` | Inline SVG bar chart → native DOCX bands | ✓ | 97.03% | 2,907 |
+| `rasterize-in-place-chart` | Complex SVG + canvas rasterized via `rasterizeInPlace` before conversion | ✓ | 99.20% | 3,276 |
+| `table-cell-bar-divs` | CSS bar divs inside table cells | ✓ | 98.74% | 5,862 |
+| `unicode-emoji-content` | Emoji in body text | ✓ | 95.05% | 3,619 |
+| `image-block` | `data:` URL `<img>` in a centered paragraph | ✓ | 98.75% | 1,410 |
 | `image-figure` | `<figure>` → `<img>` + `<figcaption>` | ✓ | 99.33% | 809 |
-| `tooltip-skipped` | Heading permalink tooltip (`role=tooltip`) is skipped, not rendered as text | ✓ | 96.32% | 3,134 |
-| `modal-dialog-skipped` | Figure with a click-to-expand `<dialog>` holding a duplicate image — modal is skipped | ✓ | 94.75% | 2,065 |
-| `ordered-list-lower-alpha` | `<ol list-style-type:lower-alpha>` | ✓ | 96.45% | 1,946 |
-| `ordered-list-upper-roman` | `<ol list-style-type:upper-roman>` | ✓ | 96.24% | 1,112 |
-| `unordered-list-square` | `<ul list-style-type:square>` | ✓ | 96.06% | 1,701 |
+| `tooltip-skipped` | Heading permalink tooltip (`role=tooltip`) is skipped, not rendered as text | ✓ | 90.48% | 3,397 |
+| `modal-dialog-skipped` | Figure with a click-to-expand `<dialog>` holding a duplicate image — modal is skipped | ✓ | 95.15% | 2,064 |
+| `ordered-list-lower-alpha` | `<ol list-style-type:lower-alpha>` | ✓ | 97.30% | 1,933 |
+| `ordered-list-upper-roman` | `<ol list-style-type:upper-roman>` | ✓ | 97.12% | 1,106 |
+| `unordered-list-square` | `<ul list-style-type:square>` | ✓ | 96.89% | 1,657 |
 
 ---
 
@@ -81,13 +83,13 @@ Bottom 8 cases by layout-based visual score — human rating (1 = looks right, 2
 | Test | Visual | Human | Notes |
 |------|-------:|:-----:|-------|
 | `typography-colors` | 90.35% | 1 | Foreground/background colors, mixed inline & block |
-| `nested-blockquotes-lists` | 91.00% | 1 |  |
-| `horizontal-rule` | 93.08% | 1 | Minor vertical height issues |
+| `tooltip-skipped` | 90.48% | 1 | Heading permalink tooltip (`role=tooltip`) is skipped, not rendered as text |
+| `nested-blockquotes-lists` | 91.48% | 1 |  |
+| `borderless-table` | 91.55% | 1 | Label/value table with `border:none` |
+| `heading-hierarchy` | 91.56% | 1 | h1 / h2 / h3 with body text |
 | `flex-row-images` | 93.73% | 1 | Flex row of bordered cards each wrapping an `<img>` (LibreOffice overflow repro; no rasterize) |
-| `modal-dialog-skipped` | 94.75% | 1 | Figure with a click-to-expand `<dialog>` holding a duplicate image — modal is skipped |
-| `mixed-margins-paddings` | 94.76% | 2 | Not bad but the Nested margin box is lower than the source html |
-| `paragraph-with-line-break` | 95.42% | 2 | Lines 2 and 3 are indented in docx, html is all left aligned |
-| `multiple-links` | 95.80% | 1 | Two links in one sentence |
+| `ordered-list-rich-inline` | 93.75% | 1 | `<ol>` with `<strong>` + highlighted `<span>` per item |
+| `horizontal-rule` | 94.64% | 1 | Minor vertical height issues |
 
 ---
 
