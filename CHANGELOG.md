@@ -4,12 +4,17 @@ All notable changes to this project will be documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## 0.1.14
+
+### Fixed
+
+- **Table rows whose cells hold only invisible-but-real content are no longer squashed.** The spacer-row collapse (which keeps truly empty divider rows from inflating to a full line box) also fired on cells containing `&nbsp;`, zero-width space, soft hyphen, `<br>`, or `<wbr>` — browsers keep a full-height line box for all of these. Such cells now count as intentional content and the row gets its natural height; genuinely whitespace-only rows still collapse. Also covers typographic spaces (`&ensp;`, `&emsp;`, `&thinsp;`), which JS `\s` matches but browsers render at full width. Suite case: `table-empty-cell-row-height`. (Thanks to Alexander Wilms for a community patch.)
+
 ## 0.1.13
 
 ### Changed
 
-- **Default text color now uses Word's `auto` instead of a forced near-black.** Text with no explicit CSS color previously had `#111111` stamped on every run; it now omits the run color so Word/LibreOffice apply their default (which renders black, and adapts to the background). This is more native and fixes a latent bug: a dark-background block whose text had no explicit color rendered dark-on-dark (invisible) — `auto` renders it light-on-dark. Hyperlinks keep their link color. (Thanks to Alexander Wilms
-  for the bug fixes and improvements)
+- **Default text color now uses Word's `auto` instead of a forced near-black.** Text with no explicit CSS color previously had `#111111` stamped on every run; it now omits the run color so Word/LibreOffice apply their default (which renders black, and adapts to the background). This is more native and fixes a latent bug: a dark-background block whose text had no explicit color rendered dark-on-dark (invisible) — `auto` renders it light-on-dark. Hyperlinks keep their link color. (Thanks to Alexander Wilms for a community patch.)
 
 ### Fixed
 

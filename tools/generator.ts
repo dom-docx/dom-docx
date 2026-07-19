@@ -359,6 +359,31 @@ const EDGE_TEST_CASES: TestCase[] = [
     `,
   },
   {
+    name: "table-empty-cell-row-height",
+    description: "Truly empty rows collapse; `&nbsp;`/zero-width rows keep a line box",
+    // Browsers keep a full-height line box for cells containing &nbsp;, zero-width
+    // space, or <wbr> — only genuinely whitespace-only rows collapse. A regression
+    // either squashes the invisible-content rows (spacer-collapse over-applied) or
+    // inflates the truly empty ones, shifting the second table's vertical profile.
+    html: `
+      <p>Empty rows collapse:</p>
+      <table style="width:100%;border-collapse:collapse">
+        <tr><td style="border:1px solid #000">Header A</td><td style="border:1px solid #000">Header B</td></tr>
+        <tr><td style="border:1px solid #000"></td><td style="border:1px solid #000"></td></tr>
+        <tr><td style="border:1px solid #000">   </td><td style="border:1px solid #000"></td></tr>
+        <tr><td style="border:1px solid #000">Footer A</td><td style="border:1px solid #000">Footer B</td></tr>
+      </table>
+      <p>Invisible content keeps its line box:</p>
+      <table style="width:100%;border-collapse:collapse">
+        <tr><td style="border:1px solid #000">&nbsp;</td><td style="border:1px solid #000"></td></tr>
+        <tr><td style="border:1px solid #000">&#8203;</td><td style="border:1px solid #000"></td></tr>
+        <tr><td style="border:1px solid #000"><b>&#8203;</b></td><td style="border:1px solid #000"></td></tr>
+        <tr style="height:40px"><td style="border:1px solid #000"></td><td style="border:1px solid #000"></td></tr>
+        <tr><td style="border:1px solid #000">Placeholder</td><td style="border:1px solid #000">Placeholder</td></tr>
+      </table>
+    `,
+  },
+  {
     name: "nested-blockquotes-lists",
     description: "Nested quotes, `<ol>` inside `<ul>`",
     html: `

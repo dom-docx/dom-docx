@@ -977,18 +977,38 @@ function buildPaddingCell(
 }
 
 /** Pass 2 — emit docx rows aligned to the grid matrix with explicit spans and widths. */
-/** Cell with nothing renderable — no text, no table/list/bar/image anywhere under it. */
+/**
+ * Only ASCII document white space (space/tab/CR/LF/FF) collapses in browsers;
+ * &nbsp;, zero-width space, soft hyphen, and typographic spaces (en/em/thin)
+ * all keep the cell's line box even though JS `\s` matches most of them.
+ */
+const NON_COLLAPSIBLE_TEXT = /[^ \t\r\n\f]/;
+
+function hasNonCollapsibleText(element: Element): boolean {
+  const walk = (nodes: AnyNode[]): boolean =>
+    nodes.some(
+      (node) =>
+        (node.type === "text" && NON_COLLAPSIBLE_TEXT.test(node.data ?? "")) ||
+        (node.type === "tag" && walk((node as Element).children ?? [])),
+    );
+  return walk(element.children ?? []);
+}
+
+/** Cell with nothing renderable — no text, no table/list/bar/image anywhere under it.
+ *  Browsers keep a full-height line box for cells containing `<br>`, `<wbr>`, or
+ *  invisible-but-real text, so those count as intentional content, not spacer rows.
+ */
 function isRenderableEmptyCell(cell: ParsedCell, styleResolver: StyleResolver): boolean {
-  if (elementPlainText(cell.element).length > 0) return false;
+  if (hasNonCollapsibleText(cell.element)) return false;
   if (cellHasBlockContent(cell.element.children ?? [], styleResolver)) return false;
-  const hasImage = (nodes: AnyNode[]): boolean =>
+  const hasContent = (nodes: AnyNode[]): boolean =>
     nodes.some(
       (node) =>
         node.type === "tag" &&
-        ((node as Element).name.toLowerCase() === "img" ||
-          hasImage((node as Element).children ?? [])),
+        (/^(?:img|br|wbr)$/.test((node as Element).name.toLowerCase()) ||
+          hasContent((node as Element).children ?? [])),
     );
-  return !hasImage(cell.element.children ?? []);
+  return !hasContent(cell.element.children ?? []);
 }
 
 /** Explicit row height: max of the tr's and its cells' `height` (CSS or attr), in twips. */

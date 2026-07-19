@@ -62,6 +62,7 @@ How it works, like snapshot tests:
 
 - **First full run** on a clean checkout has no baseline, so it **auto-saves that run as the baseline** — i.e. `main`'s scores on _your_ machine. (A `SUITE_ONLY` run won't set the baseline; run the full suite once.)
 - **Every later run** prints only what changed vs that baseline: `✓ no changes` if nothing moved past ±0.5, otherwise just the regressed/improved cases. The per-case scorecard already printed above it, so this stays a short summary, not a second wall of numbers.
+- **A brand-new suite case** has no "before" to regress from, so it's **adopted into the baseline automatically** — adding a case never asks you to do anything.
 - It's **informational** — it never fails the run or the build. A regression here is a signal to look, not an error.
 
 Typical loop: run `score:suite` once on `main` (sets your baseline), make your change, run it again, read the `vs baseline` line. Because visual scores depend on your OS / fonts / LibreOffice version, this is a **same-machine** check — the numbers in the committed `docs/TEST-SCORES.md` are the shared reference for the current champion scores, not something to diff against across machines.

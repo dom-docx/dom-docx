@@ -5,6 +5,8 @@
  *   - First full run with no baseline → this run is saved as the baseline automatically.
  *   - Every later run → prints ONLY what changed vs the baseline (a green line if nothing
  *     moved), so you don't eyeball 40+ numbers to spot a regression.
+ *   - Brand-new cases (no "before" to regress from) are adopted into the baseline
+ *     automatically.
  *   - `npm run score:pin` → deliberately re-set the baseline to the current run (e.g. after
  *     accepting new scores, or to reset to `main` before starting a change).
  *
@@ -93,6 +95,15 @@ export async function printBaselineDiff(): Promise<void> {
   }
   changed.sort((a, b) => a.delta - b.delta); // regressions first
 
+  // A new case has no "before" and can't regress — adopt it into the baseline
+  // automatically. `score:pin` stays reserved for accepting CHANGED scores.
+  if (newCases.length) {
+    const adopted = new Set(newCases);
+    baseline.cases.push(...current.cases.filter((c) => adopted.has(c.name)));
+    if (current.totalCaseCount !== undefined) baseline.totalCaseCount = current.totalCaseCount;
+    await save(baseline);
+  }
+
   const n = cur.size;
   const overall = avg(current);
   const header = `━━━ vs baseline · ${n} case${n === 1 ? "" : "s"} · avg ${overall.toFixed(2)} ━━━`;
@@ -111,8 +122,10 @@ export async function printBaselineDiff(): Promise<void> {
   }
   const regressed = changed.filter((c) => c.delta < 0).length;
   const improved = changed.length - regressed;
-  console.log(`  ${regressed} regressed · ${improved} improved · ${n - changed.length} unchanged (±${THRESHOLD})`);
-  if (newCases.length) console.log(`  new (not in baseline): ${newCases.join(", ")} — \`npm run score:pin\` to adopt`);
+  console.log(
+    `  ${regressed} regressed · ${improved} improved · ${n - changed.length - newCases.length} unchanged (±${THRESHOLD})`,
+  );
+  if (newCases.length) console.log(`  new: ${newCases.join(", ")} — added to baseline`);
 }
 
 // CLI: `--pin` re-sets the baseline (npm run score:pin). No args → print the diff.

@@ -6,14 +6,14 @@ To generate suite metrics, run `npm run score:suite` then `npm run docs:sync`. *
 
 ## Summary
 
-| Metric | Standard (21) | Edge (23) | All (44) |
+| Metric | Standard (21) | Edge (24) | All (45) |
 |--------|---------------|-----------|----------|
-| XML schema pass | 21 / 21 | 23 / 23 | **44 / 44** |
-| Avg **visual (layout-based)** | 96.55% | 96.20% | **96.37%** |
-| Avg raw layout (pre-guards) | 96.55% | 96.35% | **96.44%** |
-| Avg pixel match (tripwire, unscored) | 88.80% | 93.34% | **91.17%** |
-| Avg engine score | 93.59 | 95.01 | **94.33** |
-| Avg compile | — | — | **50.7 ms** |
+| XML schema pass | 21 / 21 | 24 / 24 | **45 / 45** |
+| Avg **visual (layout-based)** | 96.55% | 96.01% | **96.26%** |
+| Avg raw layout (pre-guards) | 96.55% | 96.25% | **96.39%** |
+| Avg pixel match (tripwire, unscored) | 88.80% | 93.20% | **91.14%** |
+| Avg engine score | 95.57 | 95.55 | **95.56** |
+| Avg compile | — | — | **39.6 ms** |
 | Identity-pair calibration (full 10) | — | — | **mean 97.21% / min 96.42%** |
 
 Tables below use the **layout-based visual** score; misaligned px is the raw pixel tripwire.
@@ -46,7 +46,7 @@ Tables below use the **layout-based visual** score; misaligned px is the raw pix
 | `centered-paragraph` | `text-align: center` | ✓ | 96.81% | 748 |
 | `horizontal-rule` | Content separated by `<hr>` | ✓ | 94.64% | 2,480 |
 
-## Edge cases (23)
+## Edge cases (24)
 
 | Test | Description | XML | Visual | Misaligned px |
 |------|-------------|-----|--------|---------------|
@@ -55,6 +55,7 @@ Tables below use the **layout-based visual** score; misaligned px is the raw pix
 | `borderless-table` | Label/value table with `border:none` | ✓ | 91.55% | 2,467 |
 | `table-row-backgrounds` | Shaded `<tr>` bands | ✓ | 98.73% | 1,764 |
 | `table-cell-padding` | Per-cell CSS `padding` overrides the table `cellpadding` (browser-native, scorable) | ✓ | 97.15% | 1,044 |
+| `table-empty-cell-row-height` | Truly empty rows collapse; `&nbsp;`/zero-width rows keep a line box | ✓ | 91.58% | 17,213 |
 | `nested-blockquotes-lists` | Nested quotes, `<ol>` inside `<ul>` | ✓ | 91.48% | 3,666 |
 | `inline-vs-block` | Spans, links, code, styled divs | ✓ | 98.35% | 3,691 |
 | `inline-backgrounds` | Multi-color inline highlights, bold in shaded span | ✓ | 97.77% | 2,988 |
@@ -87,9 +88,9 @@ Bottom 8 cases by layout-based visual score — human rating (1 = looks right, 2
 | `nested-blockquotes-lists` | 91.48% | 1 |  |
 | `borderless-table` | 91.55% | 1 | Label/value table with `border:none` |
 | `heading-hierarchy` | 91.56% | 1 | h1 / h2 / h3 with body text |
+| `table-empty-cell-row-height` | 91.58% | — | Truly empty rows collapse; `&nbsp;`/zero-width rows keep a line box |
 | `flex-row-images` | 93.73% | 1 | Flex row of bordered cards each wrapping an `<img>` (LibreOffice overflow repro; no rasterize) |
 | `ordered-list-rich-inline` | 93.75% | 1 | `<ol>` with `<strong>` + highlighted `<span>` per item |
-| `horizontal-rule` | 94.64% | 1 | Minor vertical height issues |
 
 ---
 

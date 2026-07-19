@@ -15,25 +15,25 @@ All libraries use the **same visual harness**: human-validated layout fidelity p
 
 ---
 
-## Suite summary (44 cases)
+## Suite summary (45 cases)
 
 | Metric | html-to-docx | @turbodocx/html-to-docx | dom-docx |
 |--------|---:|---:|---:|
-| XML schema pass | 0 / 44 | 0 / 44 | **44 / 44** |
-| Avg **visual (layout-based)** | 64.31% | 65.37% | **96.37%** |
-| Avg editability | 100.00 | 100.00 | 99.32 |
-| Avg engine score | 81.90 | 81.91 | **94.33** |
-| Avg compile | 13.1 ms | 19.7 ms | 50.7 ms |
+| XML schema pass | 0 / 45 | 0 / 45 | **45 / 45** |
+| Avg **visual (layout-based)** | 64.62% | 65.65% | **96.26%** |
+| Avg editability | 100.00 | 100.00 | 99.33 |
+| Avg engine score | 81.91 | 82.31 | **95.56** |
+| Avg compile | 14.1 ms | 16.1 ms | 39.6 ms |
 
 Δ vs dom-docx (library − dom-docx):
 
 | Library | Δ visual | Δ engine |
 |---------|---------:|---------:|
-| html-to-docx | **-32.06** | -12.43 |
-| @turbodocx/html-to-docx | **-31.00** | -12.43 |
+| html-to-docx | **-31.64** | -13.65 |
+| @turbodocx/html-to-docx | **-30.61** | -13.25 |
 
-**dom-docx wins 41 / 44 cases** against html-to-docx (higher layout-based visual score).
-**dom-docx wins 39 / 44 cases** against @turbodocx/html-to-docx (higher layout-based visual score).
+**dom-docx wins 42 / 45 cases** against html-to-docx (higher layout-based visual score).
+**dom-docx wins 40 / 45 cases** against @turbodocx/html-to-docx (higher layout-based visual score).
 
 ---
 
@@ -70,6 +70,7 @@ All libraries use the **same visual harness**: human-validated layout fidelity p
 | `simple-unordered-list` | ✗ | 77.16% | 97.27% | -20.11 |
 | `heading-hierarchy` | ✗ | 75.33% | 91.56% | -16.23 |
 | `inline-backgrounds` | ✗ | 83.65% | 97.77% | -14.12 |
+| `table-empty-cell-row-height` | ✗ | 78.28% | 91.58% | -13.30 |
 | `paragraph-and-list` | ✗ | 84.12% | 97.01% | -12.89 |
 | `multiple-links` | ✗ | 86.24% | 96.59% | -10.35 |
 | `basic-inline-formatting` | ✗ | 86.93% | 97.24% | -10.31 |
@@ -121,6 +122,7 @@ All libraries use the **same visual harness**: human-validated layout fidelity p
 | `horizontal-rule` | ✗ | 72.33% | 94.64% | -22.31 |
 | `pre-code-block` | ✗ | 77.42% | 97.16% | -19.74 |
 | `unicode-emoji-content` | ✗ | 77.67% | 95.05% | -17.38 |
+| `table-empty-cell-row-height` | ✗ | 78.05% | 91.58% | -13.53 |
 | `heading-hierarchy` | ✗ | 78.34% | 91.56% | -13.22 |
 | `table-cell-bar-divs` | ✗ | 89.32% | 98.74% | -9.42 |
 | `simple-ordered-list` | ✗ | 93.28% | 97.24% | -3.96 |
@@ -184,7 +186,7 @@ Regenerate: `npm run score:css-cascade`.
 | Config options | ✅ | 80/80 checks passed (node + browser) | `npm run guard:config` |
 | Document canvas colors | ✅ | 17/17 structural checks | `npm run guard:document-canvas` |
 | Image spacing | ✅ | 5/5 flow images floored, flex images tight | `npm run guard:image-spacing` |
-| Inline path | ✅ | 44/44 equivalent (default vs explicit inline) | `npm run guard:inline` |
+| Inline path | ✅ | 45/45 equivalent (default vs explicit inline) | `npm run guard:inline` |
 | Internal hrefs | ✅ | 16/16 structural checks | `npm run guard:internal-href` |
 | Pack smoke | ✅ | 1/1 library + CLI + browser entry install and convert | `npm run guard:pack-smoke` |
 | Page breaks | ✅ | 9/9 OOXML + multi-page PDF + computed | `npm run guard:page-break` |
