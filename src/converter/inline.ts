@@ -27,6 +27,8 @@ function mergeTypography(base: RunTypography, overlay: RunTypography): RunTypogr
     underline: overlay.underline !== undefined ? overlay.underline : base.underline,
     allCaps: overlay.allCaps !== undefined ? overlay.allCaps : base.allCaps,
     characterSpacing: overlay.characterSpacing ?? base.characterSpacing,
+    superScript: overlay.superScript ?? base.superScript,
+    subScript: overlay.subScript ?? base.subScript,
     color: overlay.color ?? base.color,
     shading: overlay.shading ?? base.shading,
     style: overlay.style ?? base.style,
@@ -70,6 +72,8 @@ export function typographyToTextRunOptions(
   }
   if (style.bold !== undefined) options.bold = style.bold;
   if (style.italics !== undefined) options.italics = style.italics;
+  if (style.superScript) options.superScript = true;
+  if (style.subScript) options.subScript = true;
   if (style.allCaps !== undefined) options.allCaps = style.allCaps;
   if (style.characterSpacing) options.characterSpacing = style.characterSpacing;
   if (style.underline === true) {

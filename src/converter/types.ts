@@ -59,6 +59,10 @@ export interface RunTypography {
   allCaps?: boolean;
   /** Extra tracking between characters in twips — CSS `letter-spacing`. */
   characterSpacing?: number;
+  /** CSS `vertical-align: super` → `w:vertAlign superscript`. */
+  superScript?: boolean;
+  /** CSS `vertical-align: sub` → `w:vertAlign subscript`. */
+  subScript?: boolean;
   color?: string;
   fontSize?: number;
   font?: string;
