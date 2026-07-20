@@ -287,12 +287,24 @@ function explicitCellWidthTwips(
   if (css.widthPercent !== undefined) {
     return Math.round((css.widthPercent / 100) * contentWidthTwips);
   }
+  const style = cell.element.attribs?.style ?? "";
+  const styleMatch = style.match(/width\s*:\s*([\d.]+\s*(?:%|px|pt|pc|mm|cm|in)?)/i);
+  if (styleMatch) {
+    const raw = styleMatch[1]!.trim();
+    if (raw.endsWith("%")) {
+      const value = parseFloat(raw.slice(0, -1));
+      if (Number.isFinite(value)) return Math.round((value / 100) * contentWidthTwips);
+    } else {
+      const twips = parseTableLengthToTwips(raw);
+      if (twips !== undefined) return twips;
+    }
+  }
   const attr = cell.element.attribs?.width?.trim();
   if (attr) {
     const percent = attr.match(/^(\d+(?:\.\d+)?)%$/);
     if (percent) return Math.round((parseFloat(percent[1]!) / 100) * contentWidthTwips);
-    const px = parseFloat(attr);
-    if (Number.isFinite(px)) return pxToTwips(px);
+    const twips = parseTableLengthToTwips(attr);
+    if (twips !== undefined) return twips;
   }
   return undefined;
 }
@@ -427,24 +439,42 @@ function parseCellPadding(table: Element): number | undefined {
   return Number.isFinite(px) ? pxToTwips(px) : undefined;
 }
 
-/** One `<col>`'s width in twips: `style="width:N%|Npx"` or `width="N%|N"`, else undefined. */
+function parseTableLengthToTwips(raw: string): number | undefined {
+  const trimmed = raw.trim().toLowerCase();
+  const m = trimmed.match(/^([\d.]+)\s*(px|pt|pc|mm|cm|in)?$/i);
+  if (!m) return undefined;
+  const value = parseFloat(m[1]!);
+  if (!Number.isFinite(value)) return undefined;
+  const unit = (m[2] ?? "px").toLowerCase();
+  if (unit === "px") return pxToTwips(value);
+  if (unit === "pt") return Math.round(value * 20);
+  if (unit === "pc") return Math.round(value * 240);
+  if (unit === "in") return Math.round(value * 1440);
+  if (unit === "cm") return Math.round((value * 14400) / 25.4);
+  if (unit === "mm") return Math.round((value * 1440) / 25.4);
+  return undefined;
+}
+
+/** One `<col>`'s width in twips: `style="width:N%|N<unit>"` or `width="N%|N<unit>"`, else undefined. */
 function colWidthTwips(col: Element, contentWidthTwips: number): number | undefined {
   const style = col.attribs?.style ?? "";
-  const styleMatch = style.match(/width\s*:\s*([\d.]+)\s*(%|px)?/i);
+  const styleMatch = style.match(/width\s*:\s*([\d.]+\s*(?:%|px|pt|pc|mm|cm|in)?)/i);
   if (styleMatch) {
-    const value = parseFloat(styleMatch[1]!);
-    if (Number.isFinite(value)) {
-      return styleMatch[2] === "%"
-        ? Math.round((value / 100) * contentWidthTwips)
-        : pxToTwips(value);
+    const raw = styleMatch[1]!.trim();
+    if (raw.endsWith("%")) {
+      const value = parseFloat(raw.slice(0, -1));
+      if (Number.isFinite(value)) return Math.round((value / 100) * contentWidthTwips);
+    } else {
+      const twips = parseTableLengthToTwips(raw);
+      if (twips !== undefined) return twips;
     }
   }
   const attr = col.attribs?.width?.trim();
   if (attr) {
     const pct = attr.match(/^([\d.]+)%$/);
     if (pct) return Math.round((parseFloat(pct[1]!) / 100) * contentWidthTwips);
-    const px = parseFloat(attr);
-    if (Number.isFinite(px)) return pxToTwips(px);
+    const twips = parseTableLengthToTwips(attr);
+    if (twips !== undefined) return twips;
   }
   return undefined;
 }

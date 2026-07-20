@@ -450,7 +450,7 @@ Lower-level Node helpers: `preparePlaywrightRasterizedExport(page, rootSelector?
 
 `h1`–`h6`, `p`, `div`, `section`, `ul`, `ol`, `li`, `table`, `thead`, `tbody`, `tfoot`, `tr`, `td`, `th`, `blockquote`, `hr`, `figure`, `figcaption`, `img`, `svg` (low-complexity), `strong`, `b`, `em`, `i`, `u`, `a`, `span`, `code`, `br`, `pre` (limited).
 
-Element attributes: table `border` / `cellpadding` / `cellspacing` / `colspan`; `href` on links (including same-document `#id` fragments); `id` (and legacy `a[name]`) as bookmark targets for those fragments; `src` / `width` / `height` / `alt` on images; list `type`. `<img>` embeds `data:` URLs by default; other `src` schemes require an [`imageResolver`](#images--the-resolver-hook). Other attributes are mostly ignored.
+Element attributes: table `border` / `cellpadding` / `cellspacing` / `colspan`; `width` on `<col>` / `<td>` / `<th>` (`%`, `px`, or physical units `pt` / `pc` / `mm` / `cm` / `in`; unitless = px); `href` on links (including same-document `#id` fragments); `id` (and legacy `a[name]`) as bookmark targets for those fragments; `src` / `width` / `height` / `alt` on images; list `type`. `<img>` embeds `data:` URLs by default; other `src` schemes require an [`imageResolver`](#images--the-resolver-hook). Other attributes are mostly ignored.
 
 Same-document links (`href="#section-id"`) become Word internal hyperlinks to a bookmark on the element with that `id` (or a legacy `<a name="…">`). External `http(s):` URLs stay relationship-based hyperlinks. Bare `href="#"` is not treated as an internal target.
 

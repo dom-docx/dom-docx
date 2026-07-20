@@ -202,6 +202,34 @@ const docx = await convertHtmlToDocx(html);</code></pre>
     `,
   },
   {
+    name: "table-physical-unit-widths",
+    description: "Column widths in physical units (pt/mm/cm/in) via `<colgroup>` — each header states its expected width",
+    // Browsers resolve pt/mm/cm/in column widths natively, so this is a scorable
+    // oracle (same rationale as css-length-units): a regression that misreads a
+    // physical unit as px collapses the mm/cm/in columns to slivers (38.1mm →
+    // 38.1px) and the grid diverges hard from the browser's 1in/1.5in/2in/2in
+    // split. The pins sum to the full 6.5in content width, and each header spells
+    // out the width to expect so a human inspecting the DOCX can verify columns
+    // with the ruler; short body cells keep wrapping out of the signal.
+    html: `
+      <table border="1" cellpadding="4" style="border-collapse:collapse;table-layout:fixed;width:100%">
+        <colgroup>
+          <col style="width:72pt">
+          <col style="width:38.1mm">
+          <col style="width:5.08cm">
+          <col style="width:2in">
+        </colgroup>
+        <tr>
+          <th align="left">72pt = 1in</th>
+          <th align="left">38.1mm = 1.5in</th>
+          <th align="left">5.08cm = 2in</th>
+          <th align="left">2in = 2in</th>
+        </tr>
+        <tr><td>points</td><td>millimeters</td><td>centimeters</td><td>inches</td></tr>
+      </table>
+    `,
+  },
+  {
     name: "css-length-units",
     description: "Physical CSS length units (mm, cm, in, pc) — indents/padding at real distances",
     // Browsers resolve mm/cm/in/pc natively, so this is a scorable oracle: a regression
