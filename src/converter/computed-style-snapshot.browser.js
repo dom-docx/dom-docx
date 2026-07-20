@@ -50,6 +50,8 @@
     "borderLeftColor",
     "breakBefore",
     "breakAfter",
+    "writingMode",
+    "textOrientation",
   ];
 
   const results = [];

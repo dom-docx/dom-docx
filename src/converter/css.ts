@@ -62,6 +62,10 @@ export interface ParsedCss {
   pageBreakBefore?: boolean;
   /** CSS break-after / page-break-after — applied to the next block sibling. */
   pageBreakAfter?: boolean;
+  /** CSS writing-mode — vertical modes rotate table cell text (w:textDirection). */
+  writingMode?: string;
+  /** CSS text-orientation — `upright` has no OOXML equivalent and stays horizontal. */
+  textOrientation?: string;
 }
 
 const PX_TO_TWIPS = 15;
@@ -365,6 +369,12 @@ export function parseInlineStyle(style: string | undefined): ParsedCss {
       case "break-after":
       case "page-break-after":
         if (isPageBreakCssValue(value)) result.pageBreakAfter = true;
+        break;
+      case "writing-mode":
+        result.writingMode = value.trim().toLowerCase();
+        break;
+      case "text-orientation":
+        result.textOrientation = value.trim().toLowerCase();
         break;
       default:
         break;

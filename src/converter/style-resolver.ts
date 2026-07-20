@@ -89,6 +89,9 @@ export function parsedCssFromComputedRecord(raw: Record<string, string>): Parsed
     css.pageBreakAfter = true;
   }
 
+  css.writingMode = raw.writingMode?.trim().toLowerCase() || undefined;
+  css.textOrientation = raw.textOrientation?.trim().toLowerCase() || undefined;
+
   // DOCXs assume a light canvas — drop near-white text with no dark fill so Word
   // doesn't stamp invisible light-on-white runs from a dark-mode browser tab.
   return remapComputedColorsForDocumentCanvas(css);

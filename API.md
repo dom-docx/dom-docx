@@ -477,6 +477,8 @@ Parsed from `style=""` (and from computed snapshots on the computed path):
 | `break-before`, `page-break-before` | `page`, `always`, `left`, `right` → page break before block |
 | `break-after`, `page-break-after` | same values → page break before **next** block sibling |
 | `page` | Named `@page` (or `portrait` / `landscape`) on a top-level block → starts a DOCX section in that orientation; ignored when the `orientation` option is set |
+| `writing-mode` | Table cells only: `vertical-rl` / `vertical-lr` / `sideways-rl` → text rotated 90° clockwise (`w:textDirection tbRl`); `sideways-lr` → 90° counter-clockwise (`btLr`). Inherits from the `<tr>`. |
+| `text-orientation` | `upright` cancels the rotation (stacked upright glyphs have no OOXML equivalent); `mixed` / `sideways` rotate as above |
 
 **Page break examples** (inline styles or computed stylesheet):
 
@@ -559,7 +561,7 @@ Built-in resolvers and helpers (exported from `dom-docx`):
 | `rasterizeInPlace(root, options?)` | Browser: mutate live DOM to replace charts with PNG `<img>`. |
 | `isSimpleSvgElement(svg)` | Browser: true when SVG converts natively without rasterization. |
 
-**Computed style properties captured** (via `getComputedStyle`): `color`, `backgroundColor`, `display`, `flexDirection`, `gap` / `columnGap` / `rowGap`, `textAlign`, `fontSize`, `fontWeight`, `fontStyle`, margin and padding sides, per-side border width/color. UA defaults on headings are partially stripped when the element has no inline override, so the computed path stays aligned with the inline path for bare `<h1>`–`<h6>`.
+**Computed style properties captured** (via `getComputedStyle`): `color`, `backgroundColor`, `display`, `flexDirection`, `gap` / `columnGap` / `rowGap`, `textAlign`, `fontSize`, `fontWeight`, `fontStyle`, margin and padding sides, per-side border width/color, `writingMode` / `textOrientation`. UA defaults on headings are partially stripped when the element has no inline override, so the computed path stays aligned with the inline path for bare `<h1>`–`<h6>`.
 
 ---
 

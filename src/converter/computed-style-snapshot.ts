@@ -72,6 +72,8 @@ export function snapshotComputedStylesFromDocument(
     "borderLeftColor",
     "breakBefore",
     "breakAfter",
+    "writingMode",
+    "textOrientation",
   ] as const;
 
   const results: ComputedStyleSnapshot[] = [];

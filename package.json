@@ -82,6 +82,7 @@
     "guard:table-width-units": "tsx tools/table-width-units-test.ts",
     "guard:section-prefix": "tsx tools/section-prefix-test.ts",
     "guard:mixed-orientation": "tsx tools/mixed-orientation-test.ts",
+    "guard:vertical-text": "tsx tools/vertical-text-test.ts",
     "research:wild": "tsx tools/wild-runner.ts",
     "research:wild-corpus": "tsx tools/wild-corpus-build.ts",
     "research:label": "tsx tools/label-renders.ts",

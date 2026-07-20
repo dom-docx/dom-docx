@@ -8,12 +8,13 @@ import {
   Table,
   TableCell,
   TableRow,
+  TextDirection,
   TextRun,
   WidthType,
 } from "docx";
 import type { CheerioAPI } from "cheerio";
 import type { AnyNode, Element } from "domhandler";
-import { BODY_LINE_EXACT_TWIPS, HEADING_FONT_HALF_POINTS } from "./constants.js";
+import { BODY_FONT_HALF_POINTS, BODY_LINE_EXACT_TWIPS, HEADING_FONT_HALF_POINTS } from "./constants.js";
 import {
   cssToBlockTypography,
   inheritedFontFamily,
@@ -189,6 +190,34 @@ function cellShading(cell: ParsedCell, styleResolver: StyleResolver) {
   };
 }
 
+/**
+ * CSS vertical writing modes → OOXML cell text direction (`w:textDirection`).
+ * `text-orientation: upright` (stacked upright glyphs) has no OOXML equivalent,
+ * so those cells stay horizontal. `tb-rl` / `tb` / `tb-lr` are the deprecated
+ * SVG1/IE-era aliases still found in legacy and Word-exported HTML.
+ * `vertical-lr` strictly maps to `tbLrV` (lines stack left-to-right), but the
+ * docx library only exposes tbRl/btLr — identical for the single-line header
+ * case, which is what vertical cells are in practice.
+ */
+function cellTextDirection(
+  css: ParsedCss,
+): (typeof TextDirection)[keyof typeof TextDirection] | undefined {
+  if (css.textOrientation === "upright") return undefined;
+  switch (css.writingMode) {
+    case "vertical-rl":
+    case "vertical-lr":
+    case "sideways-rl":
+    case "tb-rl":
+    case "tb":
+    case "tb-lr":
+      return TextDirection.TOP_TO_BOTTOM_RIGHT_TO_LEFT; // rotated 90° clockwise
+    case "sideways-lr":
+      return TextDirection.BOTTOM_TO_TOP_LEFT_TO_RIGHT; // rotated 90° counter-clockwise
+    default:
+      return undefined;
+  }
+}
+
 function elementPlainText(element: Element): string {
   const parts: string[] = [];
   function walk(nodes: AnyNode[]): void {
@@ -244,6 +273,12 @@ function estimateCellContentWidthTwips(
   cellPadding?: number,
 ): number {
   const padX = cellPadding ? cellPadding * 2 : pxToTwips(16);
+  // Rotated text occupies one line box horizontally; its length grows the row
+  // height instead of the column width.
+  const css = resolveCellCss(cell, styleResolver);
+  if (cellTextDirection(css)) {
+    return padX + Math.round((css.fontSize ?? BODY_FONT_HALF_POINTS) * 10 * 1.4);
+  }
   return padX + estimateCellTextWidthTwips(cell, styleResolver);
 }
 
@@ -954,6 +989,8 @@ function buildTableCell(
     : cellPadding
       ? { top: cellPadding, bottom: cellPadding, left: cellPadding, right: cellPadding }
       : undefined;
+  // Row-merged CSS so `writing-mode` on the <tr> rotates its cells (it inherits).
+  const textDirection = cellTextDirection(resolveCellCss(cell, styleResolver));
   return new TableCell({
     columnSpan: span > 1 ? span : undefined,
     rowSpan: cell.rowspan > 1 ? cell.rowspan : undefined,
@@ -964,6 +1001,7 @@ function buildTableCell(
     margins,
     shading: cellShading(cell, styleResolver),
     ...(borders ? { borders } : {}),
+    ...(textDirection ? { textDirection } : {}),
     children: cellBlocks($, cell, columnIndex, columnWidths, styleResolver, cellPadding),
   });
 }
