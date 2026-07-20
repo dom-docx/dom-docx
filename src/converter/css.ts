@@ -66,6 +66,8 @@ export interface ParsedCss {
   writingMode?: string;
   /** CSS text-orientation — `upright` has no OOXML equivalent and stays horizontal. */
   textOrientation?: string;
+  /** CSS `vertical-align: super | sub` → superscript / subscript on text runs. */
+  verticalAlign?: string;
 }
 
 const PX_TO_TWIPS = 15;
@@ -281,6 +283,9 @@ export function parseInlineStyle(style: string | undefined): ParsedCss {
         break;
       case "font-style":
         result.fontStyle = value;
+        break;
+      case "vertical-align":
+        result.verticalAlign = value.trim().toLowerCase();
         break;
       case "font-family":
         result.fontFamily = mapFontFamily(value);
@@ -623,6 +628,11 @@ export function cssToBlockTypography(css: ParsedCss): RunTypography {
   }
   if (css.fontFamily) {
     typography.font = css.fontFamily;
+  }
+  if (css.verticalAlign === "super") {
+    typography.superScript = true;
+  } else if (css.verticalAlign === "sub") {
+    typography.subScript = true;
   }
   if (css.textTransform === "uppercase") {
     typography.allCaps = true;
