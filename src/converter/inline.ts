@@ -22,10 +22,10 @@ import type { BlockLayout, RunTypography } from "./types.js";
 
 function mergeTypography(base: RunTypography, overlay: RunTypography): RunTypography {
   return {
-    bold: overlay.bold ?? base.bold,
-    italics: overlay.italics ?? base.italics,
-    underline: overlay.underline ?? base.underline,
-    allCaps: overlay.allCaps ?? base.allCaps,
+    bold: overlay.bold !== undefined ? overlay.bold : base.bold,
+    italics: overlay.italics !== undefined ? overlay.italics : base.italics,
+    underline: overlay.underline !== undefined ? overlay.underline : base.underline,
+    allCaps: overlay.allCaps !== undefined ? overlay.allCaps : base.allCaps,
     characterSpacing: overlay.characterSpacing ?? base.characterSpacing,
     color: overlay.color ?? base.color,
     shading: overlay.shading ?? base.shading,
@@ -70,13 +70,15 @@ export function typographyToTextRunOptions(
   }
   if (style.bold !== undefined) options.bold = style.bold;
   if (style.italics !== undefined) options.italics = style.italics;
-  if (style.allCaps) options.allCaps = true;
+  if (style.allCaps !== undefined) options.allCaps = style.allCaps;
   if (style.characterSpacing) options.characterSpacing = style.characterSpacing;
-  if (style.underline) {
+  if (style.underline === true) {
     options.underline = {
       type: UnderlineType.SINGLE,
       ...(style.style === "Hyperlink" ? { color: style.color ?? HYPERLINK_COLOR } : {}),
     };
+  } else if (style.underline === false) {
+    options.underline = { type: UnderlineType.NONE };
   }
   if (style.font) options.font = style.font;
   if (style.style) options.style = style.style;
@@ -109,6 +111,17 @@ function textRun(text: string, style: RunTypography, defaultSize: number = BODY_
   return run;
 }
 
+function pushTextRun(
+  runs: ParagraphChild[],
+  text: string,
+  style: RunTypography,
+  defaultSize: number,
+  state: InlineRunState,
+): void {
+  runs.push(textRun(text, style, defaultSize));
+  state.lastUnderlineCancelled = style.underline === false;
+}
+
 function isElement(node: AnyNode): node is Element {
   return node.type === "tag";
 }
@@ -118,6 +131,8 @@ interface InlineRunState {
   needsSpaceBeforeNext: boolean;
   /** After `<br>` — trim HTML source indentation on the next line. */
   afterLineBreak: boolean;
+  /** Previous text run explicitly cancelled underline (e.g. `text-decoration:none`). */
+  lastUnderlineCancelled?: boolean;
 }
 
 function prependPendingSpace(
@@ -172,10 +187,17 @@ export function collectInlineRunsFromNodes(
       }
       normalized = prependPendingSpace(normalized, inherited, state);
       if (normalized.startsWith(" ") && runs.length > 0) {
-        runs.push(textRun(" ", inherited, defaultSize));
-        normalized = normalized.trimStart();
+        // Resuming `<u>` after `text-decoration:none`: keep the leading space on the
+        // following underlined run. A standalone underlined space-only run becomes
+        // an empty `<w:t/>` in the packer and LibreOffice PDF export paints its
+        // underline backward through the preceding plain run.
+        const resumeAfterCancel = inherited.underline === true && state.lastUnderlineCancelled;
+        if (!resumeAfterCancel) {
+          pushTextRun(runs, " ", inherited, defaultSize, state);
+          normalized = normalized.trimStart();
+        }
       }
-      runs.push(textRun(normalized, inherited, defaultSize));
+      pushTextRun(runs, normalized, inherited, defaultSize, state);
       continue;
     }
 
@@ -207,7 +229,7 @@ export function collectInlineRunsFromNodes(
     }
 
     if (state.needsSpaceBeforeNext && runs.length > 0) {
-      runs.push(textRun(" ", inherited, defaultSize));
+      pushTextRun(runs, " ", inherited, defaultSize, state);
       state.needsSpaceBeforeNext = false;
     }
     if (state.afterLineBreak) {

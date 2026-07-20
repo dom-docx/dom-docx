@@ -23,6 +23,8 @@ export interface ParsedCss {
   borderCollapse?: string;
   /** `text-transform` keyword (uppercase → Word all-caps display property). */
   textTransform?: string;
+  /** Parsed from `text-decoration` / `text-decoration-line` — underline on/off/none. */
+  textDecoration?: string;
   /** `letter-spacing` in twips (absolute units). */
   letterSpacingTwips?: number;
   /** `letter-spacing` in em (resolved against font size at typography build). */
@@ -254,6 +256,10 @@ export function parseInlineStyle(style: string | undefined): ParsedCss {
         break;
       case "text-transform":
         result.textTransform = value.trim().toLowerCase();
+        break;
+      case "text-decoration":
+      case "text-decoration-line":
+        result.textDecoration = value.trim().toLowerCase();
         break;
       case "border-collapse":
         result.borderCollapse = value.trim().toLowerCase();
@@ -626,6 +632,16 @@ export function cssToBlockTypography(css: ParsedCss): RunTypography {
   }
   if (css.textTransform === "uppercase") {
     typography.allCaps = true;
+  } else if (css.textTransform === "none") {
+    typography.allCaps = false;
+  }
+  if (css.textDecoration !== undefined) {
+    const tokens = css.textDecoration.split(/\s+/).filter(Boolean);
+    if (tokens.includes("none")) {
+      typography.underline = false;
+    } else if (tokens.includes("underline")) {
+      typography.underline = true;
+    }
   }
   const letterSpacing =
     css.letterSpacingTwips ??

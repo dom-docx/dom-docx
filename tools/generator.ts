@@ -117,12 +117,34 @@ const STANDARD_TEST_CASES: TestCase[] = [
   },
   {
     name: "basic-inline-formatting",
-    description: "`<strong>`, `<em>`, nested bold-italic",
+    description:
+      "`<strong>`, `<em>`, nested bold-italic, and explicit CSS cancellation inside inherited styles",
+    // Inner spans must emit w:b/w:i/w:caps/w:u val=false (or u@val=none) — otherwise they
+    // inherit the parent typography and mixed-style lines diverge from the browser.
+    // Table rows use the same inline-run path as paragraphs (cellTypography → collectInlineRuns).
     html: `
       <p>
         This sentence has <strong>bold</strong>, <em>italic</em>, and
         <strong><em>bold italic</em></strong> text.
       </p>
+      <p>
+        <strong>Bold bookends <span style="font-weight:normal">plain weight</span> here.</strong>
+        <em>Italic bookends <span style="font-style:normal">plain style</span> here.</em>
+      </p>
+      <p>
+        <span style="text-transform:uppercase">Caps bookends <span style="text-transform:none">Mixed Case</span> end.</span><br>
+        <u>Underline bookends <span style="text-decoration:none">plain line</span> end.</u>
+      </p>
+      <table border="1" cellpadding="4" style="border-collapse:collapse;width:100%">
+        <tr>
+          <td><strong>Bold <span style="font-weight:normal">plain</span> bold</strong></td>
+          <td><em>Italic <span style="font-style:normal">plain</span> italic</em></td>
+        </tr>
+        <tr>
+          <td style="text-transform:uppercase"><span style="text-transform:none">Mixed</span> case</td>
+          <td><u>Under <span style="text-decoration:none">plain</span> line</u></td>
+        </tr>
+      </table>
     `,
   },
   {
