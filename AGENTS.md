@@ -189,6 +189,30 @@ Supported for **small toolbars, KPI chips, column stacks**:
 
 Do **not** use flex for page layout, sticky headers, or precise pixel alignment. Max ~4 items per row.
 
+### Header, footer, and page-number fields
+
+`headerHtml` and `footerHtml` accept the same HTML fragment as the body. `{page}` and `{pages}` tokens inside those fragments emit native Word PAGE / NUMPAGES fields; each token inherits the typography of its surrounding `<span>` (font size, color, bold, italic).
+
+**Styled footer example** — per-token colors, mixed sizes, explicit italic cancellation:
+
+```html
+<p style="text-align:center">
+  <span style="font-style:italic;color:#47D459;font-size:28pt">p</span>
+  <span style="font-style:italic;color:#47D459;font-size:9pt">age </span>
+  <span style="font-weight:bold;font-style:normal;color:#FF0000;font-size:28pt">{page}</span>
+  <span style="font-style:italic;color:#47D459;font-size:9pt"> </span>
+  <span style="font-style:italic;color:#0070C0;font-size:9pt">of {pages}</span>
+</p>
+```
+
+Rules to follow:
+
+- Wrap each token in a `<span>` carrying its intended styling. The field is emitted with whatever `font-weight`, `font-style`, `color`, and `font-size` surround the `{page}` / `{pages}` placeholder.
+- To make a field **not italic** inside an italic parent, set `font-style:normal` on the token's span — this emits `<w:i w:val="false"/>` to cancel the inherited italic. Same for `font-weight:normal` to cancel inherited bold.
+- A whitespace-only `<span>` between a field and the next text (e.g., the `" "` between `{page}` and `of`) is preserved as a separate space run — do not omit it.
+- `pt` is a valid `font-size` unit (`font-size:28pt` → 28 pt in the DOCX).
+- `vertical-align: super` and `vertical-align: sub` produce OOXML superscript / subscript (`w:vertAlign`) on text runs and field tokens.
+
 ### Line breaks and addresses
 
 ```html
@@ -211,9 +235,9 @@ Parsed from `style=""` on any element:
 | `color` | `color:#666` |
 | `background` / `background-color` | `background:#f5f5f5` |
 | `text-align` | `left`, `center`, `right`, `justify` |
-| `font-size` | `13px`, `12px` (px preferred) |
-| `font-weight` | `bold`, `600` |
-| `font-style` | `italic` |
+| `font-size` | `13px`, `12px`, `11pt` — `px` and `pt` units both work |
+| `font-weight` | `bold`, `600` — or `normal` / `400` to cancel inherited bold from a parent |
+| `font-style` | `italic`, `oblique` — or `normal` to cancel inherited italic from a parent |
 | `margin`, `margin-*` | `margin-top:0`, `margin:8px 0` |
 | `padding`, `padding-*` | `padding:8px`, `padding-left:12px` |
 | `border`, `border-*` | Blockquote left rule, boxed sections |

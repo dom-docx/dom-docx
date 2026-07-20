@@ -479,6 +479,7 @@ Parsed from `style=""` (and from computed snapshots on the computed path):
 | `page` | Named `@page` (or `portrait` / `landscape`) on a top-level block → starts a DOCX section in that orientation; ignored when the `orientation` option is set |
 | `writing-mode` | Table cells only: `vertical-rl` / `vertical-lr` / `sideways-rl` → text rotated 90° clockwise (`w:textDirection tbRl`); `sideways-lr` → 90° counter-clockwise (`btLr`). Inherits from the `<tr>`. |
 | `text-orientation` | `upright` cancels the rotation (stacked upright glyphs have no OOXML equivalent); `mixed` / `sideways` rotate as above |
+| `vertical-align` | `super` → `w:vertAlign superscript`; `sub` → `w:vertAlign subscript` on text runs and `{page}` / `{pages}` field tokens |
 
 **Page break examples** (inline styles or computed stylesheet):
 
@@ -623,7 +624,8 @@ HTML fragment
 After `docx` packs the document, the engine unzips the buffer and patches XML the library cannot express cleanly:
 
 - **`numbering.xml`** — LibreOffice needs list tab stops as `w:val="num"` (not `"left"`) and drops tentative numbering flags.
-- **`document.xml`** — Shaded paragraphs with exact line spacing get vertical text alignment so PDF export centers padding correctly.
+- **`document.xml`** — Shaded paragraphs with exact line spacing get vertical text alignment so PDF export centers padding correctly; `w:fldSimple` elements are rewritten to the 5-run complex field form (`begin → instrText → separate → display-value → end`) so Word does not treat the cached value as permanent content.
+- **`word/footer*.xml` / `word/header*.xml`** — `{page}` / `{pages}` tokens injected by `injectFieldTokens` are serialized as `w:fldSimple` by the `docx` library, then two patching passes run: (1) `patchFldSimple` rewrites them to 5-run complex fields; (2) `patchPackedDocx` collects the run-property (`w:rPr`) fingerprint of every field begin-run, de-dupes them into numbered named character styles (`FldS0`, `FldS1`, … in `word/styles.xml`), and replaces the inline `w:rPr` blocks with a `w:rStyle` reference. This is required because LibreOffice ignores inline `w:rPr` on `w:fldChar` runs and only reads the character style.
 
 These patches are applied automatically; callers receive a finished `.docx`.
 
@@ -676,6 +678,7 @@ Contributors cloning this repo: `npm run setup` (same command, via package scrip
 - **Layout CSS** — CSS grid, floats, and absolute positioning have no OOXML equivalent and are ignored; flex support covers simple row/column cases.
 - **Images** — png/jpg/gif/bmp only; svg `<img>` sources are not rasterized. Inline low-complexity `<svg>` elements convert natively; complex chart SVG and `<canvas>` can be rasterized with `rasterizeInPlace`.
 - **No JavaScript execution on the inline/spawn path** — static HTML is converted as-is. Client-rendered charts must already be in the DOM (browser computed path, live Playwright `page`, or pre-rendered markup). The spawn path does not run your app's JS bundle unless you load a full page URL in Playwright yourself.
+- **`{page}` / `{pages}` tokens are only processed in `headerHtml`, `footerHtml`, `coverHtml`, and `tocHtml`** — they are not substituted in the main body HTML and have no effect there.
 
 ---
 
