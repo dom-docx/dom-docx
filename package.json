@@ -80,6 +80,7 @@
     "guard:document-canvas": "tsx tools/document-canvas-test.ts",
     "guard:image-spacing": "tsx tools/image-spacing-test.ts",
     "guard:table-width-units": "tsx tools/table-width-units-test.ts",
+    "guard:section-prefix": "tsx tools/section-prefix-test.ts",
     "research:wild": "tsx tools/wild-runner.ts",
     "research:wild-corpus": "tsx tools/wild-corpus-build.ts",
     "research:label": "tsx tools/label-renders.ts",

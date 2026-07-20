@@ -8,6 +8,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- **A leading blank paragraph + orphaned `<w:sectPr>`-only paragraph is stripped from the document body.** The docx library can open `<w:body>` in multi-section documents with an empty paragraph followed by a paragraph whose only content is a `<w:sectPr>`, which Word renders as a blank first page. The post-pack patcher now drops exactly that prefix; bodies that start with real content, and mid-body section breaks, pass through untouched. Guard: `npm run guard:section-prefix`.
 - **Physical CSS length units (`pt`, `pc`, `mm`, `cm`, `in`) now work in table cell and column widths.** `<col style="width:72pt">`, `<col width="1in">`, and `<td width="2cm">` previously fell through to the pixel branch, so `72pt` was read as `72px` (25% too narrow) and `2cm` as `2px` (collapsed to a sliver). All five units now convert to the correct twip widths, in both the `style="width:…"` and legacy `width=""` attribute paths; unitless attribute values still mean pixels and `%` still resolves against the table content width. Suite case: `table-physical-unit-widths`. Guard: `npm run guard:table-width-units`.
 
 ## 0.1.14

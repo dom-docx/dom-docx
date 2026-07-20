@@ -55,6 +55,18 @@ export function patchTableCellSpacingOrder(documentXml: string): string {
   );
 }
 
+/**
+ * Multi-section docs from docx can start with an empty paragraph followed by a
+ * paragraph whose only content is <w:sectPr>. Word may render this prefix as an
+ * empty first page. Drop only this exact leading prefix inside <w:body>.
+ */
+export function patchLeadingBlankSectionPrefix(documentXml: string): string {
+  return documentXml.replace(
+    /(<w:body[^>]*>)\s*<w:p>\s*<w:r>\s*(?:<w:t\b[^>]*\/>|<w:t\b[^>]*>\s*<\/w:t>)\s*<\/w:r>\s*<\/w:p>\s*<w:p>\s*<w:pPr>\s*<w:sectPr>[\s\S]*?<\/w:sectPr>\s*<\/w:pPr>\s*<\/w:p>/,
+    "$1",
+  );
+}
+
 export function patchDocumentXml(documentXml: string): string {
-  return patchTableCellSpacingOrder(patchShadedParagraphVerticalAlign(documentXml));
+  return patchLeadingBlankSectionPrefix(patchTableCellSpacingOrder(patchShadedParagraphVerticalAlign(documentXml)));
 }
