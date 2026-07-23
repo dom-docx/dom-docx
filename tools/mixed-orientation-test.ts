@@ -8,10 +8,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { unzipSync } from "fflate";
-import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
-import { chromium } from "playwright";
 import { convertHtmlToDocx, type ConvertOptions } from "../src/converter.js";
-import { VIEWPORT_HEIGHT_PX, VIEWPORT_WIDTH_PX } from "../src/converter/constants.js";
 import { wrapHtml } from "../src/html-wrap.js";
 import { docxToPdf } from "./docx2pdf.js";
 import { writeGuardResult } from "./guard-result.js";
@@ -77,6 +74,7 @@ interface RenderedPage {
 }
 
 async function renderedPages(pdfPath: string): Promise<RenderedPage[]> {
+  const { getDocument } = await import("pdfjs-dist/legacy/build/pdf.mjs");
   const data = new Uint8Array(await readFile(pdfPath));
   const doc = await getDocument({ data, useSystemFonts: true }).promise;
   const pages: RenderedPage[] = [];
@@ -163,33 +161,37 @@ async function main(): Promise<void> {
     JSON.stringify(plain),
   );
 
-  console.log("\ncomputed path — class→page mapping (Playwright):");
-  const browser = await chromium.launch();
+  console.log("\ncomputed path — class→page mapping (optional, needs Playwright + Chromium):");
   try {
-    const page = await browser.newPage({
-      viewport: { width: VIEWPORT_WIDTH_PX, height: VIEWPORT_HEIGHT_PX },
-    });
-    await page.setContent(wrapHtml(CLASS_MAPPING_HTML), { waitUntil: "networkidle" });
-    const computedXml = await documentXml(CLASS_MAPPING_HTML, { styleSource: "computed", page });
-    const computedSizes = pageSizes(computedXml);
-    check(
-      "computed: two sections from class mapping",
-      sectPrCount(computedXml) === 2 && computedSizes.length === 2,
-      `${sectPrCount(computedXml)} sectPr`,
-    );
-    check(
-      "computed: portrait then landscape",
-      computedSizes[0]?.orient === "portrait" &&
-        computedSizes[1]?.orient === "landscape" &&
-        computedSizes[1]?.w === 15840 &&
-        computedSizes[1]?.h === 12240,
-      JSON.stringify(computedSizes),
-    );
+    const { chromium } = await import("playwright");
+    const { VIEWPORT_HEIGHT_PX, VIEWPORT_WIDTH_PX } = await import("../src/converter/constants.js");
+    const browser = await chromium.launch();
+    try {
+      const page = await browser.newPage({
+        viewport: { width: VIEWPORT_WIDTH_PX, height: VIEWPORT_HEIGHT_PX },
+      });
+      await page.setContent(wrapHtml(CLASS_MAPPING_HTML), { waitUntil: "networkidle" });
+      const computedXml = await documentXml(CLASS_MAPPING_HTML, { styleSource: "computed", page });
+      const computedSizes = pageSizes(computedXml);
+      check(
+        "computed: two sections from class mapping",
+        sectPrCount(computedXml) === 2 && computedSizes.length === 2,
+        `${sectPrCount(computedXml)} sectPr`,
+      );
+      check(
+        "computed: portrait then landscape",
+        computedSizes[0]?.orient === "portrait" &&
+          computedSizes[1]?.orient === "landscape" &&
+          computedSizes[1]?.w === 15840 &&
+          computedSizes[1]?.h === 12240,
+        JSON.stringify(computedSizes),
+      );
+    } finally {
+      await browser.close();
+    }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.log(`  · skipped computed section (${msg.split("\n")[0]})`);
-  } finally {
-    await browser.close();
   }
 
   console.log("\nrendered PDF pages (optional, needs LibreOffice):");
