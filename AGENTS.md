@@ -241,6 +241,7 @@ Everything else is ignored silently.
 | `blockquote` | Indented quotations |
 | `hr` | Thematic break |
 | `break-before: page`, `break-after: page` | Explicit page breaks — see [API.md](./API.md#supported-html--css) |
+| `page: portrait \| landscape \| Name` | Per-section orientation on top-level blocks (inline path); class→page rules need `styleSource: "computed"` — [API.md](./API.md#mixed-page-orientation) |
 | `strong`, `b`, `em`, `i`, `u` | Inline emphasis |
 | `a` | Hyperlinks |
 | `span` | Inline color / background |

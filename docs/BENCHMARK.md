@@ -22,8 +22,8 @@ All libraries use the **same visual harness**: human-validated layout fidelity p
 | XML schema pass | 0 / 49 | 0 / 49 | **49 / 49** |
 | Avg **visual (layout-based)** | 64.27% | 65.01% | **96.59%** |
 | Avg editability | 100.00 | 100.00 | 99.39 |
-| Avg engine score | 81.63 | 82.03 | **95.03** |
-| Avg compile | 14.6 ms | 16.4 ms | 43.4 ms |
+| Avg engine score | 81.63 | 82.03 | **95.00** |
+| Avg compile | 14.6 ms | 16.4 ms | 44.2 ms |
 
 Δ vs dom-docx (library − dom-docx):
 
@@ -187,13 +187,15 @@ Regenerate: `npm run score:css-cascade`.
 <!-- SECTION:guard-status:START -->
 | Guard | Status | Result | Command |
 |-------|:------:|--------|---------|
-| Browser bundle parity | ❌ | 2/49 equivalent to Node computed-native | `npm run guard:browser-parity` |
+| Browser bundle parity | ✅ | 49/49 equivalent to Node computed-native | `npm run guard:browser-parity` |
 | Computed parity (oracle vs native) | ✅ | 49/49 byte-identical | `npm run guard:computed-parity` |
 | Config options | ✅ | 80/80 checks passed (node + browser) | `npm run guard:config` |
 | Document canvas colors | ✅ | 18/18 structural checks | `npm run guard:document-canvas` |
+| Allowlisted Word fields | ✅ | 27/27 field OOXML + warnings | `npm run guard:fields` |
 | Image spacing | ✅ | 5/5 flow images floored, flex images tight | `npm run guard:image-spacing` |
 | Inline path | ✅ | 49/49 equivalent (default vs explicit inline) | `npm run guard:inline` |
 | Internal hrefs | ✅ | 16/16 structural checks | `npm run guard:internal-href` |
+| Mixed orientation | ✅ | 14/14 per-section w:pgSz + optional PDF | `npm run guard:mixed-orientation` |
 | Pack smoke | ✅ | 1/1 library + CLI + browser entry install and convert | `npm run guard:pack-smoke` |
 | Page breaks | ✅ | 9/9 OOXML + multi-page PDF + computed | `npm run guard:page-break` |
 | Table width units | ✅ | 7/7 OOXML gridCol twips | `npm run guard:table-width-units` |

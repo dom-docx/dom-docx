@@ -197,7 +197,7 @@ interface DocumentConfig {
 |--------|------|---------|-------------|
 | `styleSource` | `"inline" \| "computed"` | `"inline"` | Which style resolution path to use. |
 | `pageSize` | `"letter" \| "a4" \| {width,height}` | `"letter"` | Page size. Custom `{width, height}` in **inches**. |
-| `orientation` | `"portrait" \| "landscape"` | `"portrait"` | Landscape swaps the page dimensions. |
+| `orientation` | `"portrait" \| "landscape"` | `"portrait"` | Whole-document orientation. When set, **disables mixed portrait/landscape sections** from CSS — all sections use this value. Omit to allow per-section orientation from CSS — [Mixed page orientation](#mixed-page-orientation). |
 | `margins` | `{top,right,bottom,left}` | `1` each | Page margins in **inches**; each side defaults to 1″. |
 | `defaultFont` | `{family?, sizePt?}` | Arial, 10.5 pt | Default body font family and size (points). Applies to text with no explicit CSS font. |
 | `metadata` | `{title,subject,creator,keywords[],description}` | — | Core document properties → `docProps/core.xml`. `keywords` is joined with `, `. |
@@ -477,6 +477,9 @@ Parsed from `style=""` (and from computed snapshots on the computed path):
 | `gap`, `row-gap`, `column-gap` | px |
 | `break-before`, `page-break-before` | `page`, `always`, `left`, `right` → page break before block |
 | `break-after`, `page-break-after` | same values → page break before **next** block sibling |
+| `page` (inline, top-level blocks) | dom-docx shorthand: `page:portrait`, `page:landscape`, or `page:Name` referencing a named `@page` rule — [Mixed page orientation](#mixed-page-orientation) |
+| `@page { size: … }` | In embedded `<style>`: infers document default or named-page **orientation** only (not custom dimensions in v1) |
+| `page` (class selector) | e.g. `div.Section2 { page: Wide }` — **computed path only** (`styleSource: "computed"`); ignored on the default inline path |
 | `writing-mode` | Table cells only: `vertical-rl` / `vertical-lr` / `sideways-rl` → text rotated 90° clockwise (`w:textDirection tbRl`); `sideways-lr` → 90° counter-clockwise (`btLr`). Inherits from the `<tr>`. |
 | `text-orientation` | `upright` cancels the rotation (stacked upright glyphs have no OOXML equivalent); `mixed` / `sideways` rotate as above |
 
@@ -491,6 +494,31 @@ Use inline `style=""` or a stylesheet with `styleSource: "computed"`. Example:
 ```
 
 Verified by `npm run guard:page-break` (OOXML + multi-page PDF; not part of the single-page visual suite).
+
+### Mixed page orientation
+
+Per-section portrait and landscape without changing page dimensions (page size stays whatever `pageSize` resolves to).
+
+**Inline path (default):**
+
+- Top-level block `style="page:landscape"` or `style="page:portrait"` — dom-docx keywords; **not** a browser print feature (browsers need `@page Name { size: … }` plus `page: Name`).
+- Top-level `style="page:Name"` where `<style>` defines `@page Name { size: landscape }` (or two lengths with width > height).
+- `@page { size: … }` in embedded `<style>` sets the document default orientation when `orientation` is omitted.
+
+**Computed path only:**
+
+- Class→page mapping from stylesheets, e.g. `div.WordSection2 { page: WordSection2 }` with a matching `@page WordSection2 { size: … }` rule.
+
+Contiguous top-level body nodes sharing an orientation become one Word section (`w:sectPr` / `w:pgSz`). The first section keeps cover, TOC slot, and different-first-page header/footer suppression; later sections use the default header/footer only. Explicit `orientation` in `DocumentConfig` forces a single-orientation document and ignores CSS.
+
+```html
+<style>@page Wide { size: 11in 8.5in; }</style>
+<p>Portrait intro</p>
+<div style="page:landscape"><p>Landscape table spread</p></div>
+<p>Portrait outro</p>
+```
+
+Verified by `npm run guard:mixed-orientation` (structural OOXML; optional LibreOffice PDF when `soffice` is on PATH). No visual suite case — there is no browser oracle for section/page chrome.
 
 All other CSS properties are silently ignored.
 

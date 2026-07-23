@@ -4,7 +4,6 @@ import {
   Header,
   PageBreak,
   Packer,
-  PageOrientation,
   Paragraph,
   convertInchesToTwip,
   type FileChild,
@@ -17,6 +16,13 @@ import { patchChromeFieldFiles, patchDocumentXml, patchNumberingXml } from "./oo
 import { injectFieldTokens, type InlineFieldOptions } from "./fields.js";
 import { applyImageResolver, hasUnresolvedSrc, resetImageDocPrIds, type ImageResolver } from "./image.js";
 import { INLINE_STYLE_RESOLVER, type StyleResolver } from "./style-resolver.js";
+import {
+  buildBodySections,
+  parseCssPageRules,
+  resolveSectionPageSize,
+  type BodySection,
+  type PageOrientationName,
+} from "./page-orientation.js";
 import { htmlToDocxBlocks } from "./visitor.js";
 
 /**
@@ -123,7 +129,8 @@ const PAGE_PRESETS_TWIPS = {
 } as const;
 
 interface ResolvedConfig {
-  size: { width: number; height: number; orientation?: (typeof PageOrientation)[keyof typeof PageOrientation] };
+  pageSize: { width: number; height: number };
+  defaultOrientation: PageOrientationName | undefined;
   margin: { top: number; right: number; bottom: number; left: number };
   font: string;
   fontHalfPoints: number;
@@ -138,7 +145,10 @@ interface ResolvedConfig {
   rtl: boolean;
 }
 
-function resolveDocumentConfig(config?: DocumentConfig): ResolvedConfig {
+function resolveDocumentConfig(
+  config: DocumentConfig | undefined,
+  inferredOrientation: PageOrientationName | undefined,
+): ResolvedConfig {
   const ps = config?.pageSize;
   const base =
     !ps || ps === "letter"
@@ -147,11 +157,7 @@ function resolveDocumentConfig(config?: DocumentConfig): ResolvedConfig {
         ? PAGE_PRESETS_TWIPS.a4
         : { width: convertInchesToTwip(ps.width), height: convertInchesToTwip(ps.height) };
 
-  // docx swaps width/height itself for landscape, so pass portrait dims + the flag.
-  const size =
-    config?.orientation === "landscape"
-      ? { width: base.width, height: base.height, orientation: PageOrientation.LANDSCAPE }
-      : { width: base.width, height: base.height };
+  const effectiveOrientation = config?.orientation ?? inferredOrientation;
 
   const m = config?.margins;
   const marginIn = (v: number | undefined): number =>
@@ -166,7 +172,8 @@ function resolveDocumentConfig(config?: DocumentConfig): ResolvedConfig {
   if (meta?.description) metadata.description = meta.description;
 
   return {
-    size,
+    pageSize: { width: base.width, height: base.height },
+    defaultOrientation: effectiveOrientation,
     margin: { top: marginIn(m?.top), right: marginIn(m?.right), bottom: marginIn(m?.bottom), left: marginIn(m?.left) },
     font: config?.defaultFont?.family ?? BODY_FONT,
     fontHalfPoints:
@@ -263,16 +270,19 @@ function buildHeader(
 }
 
 async function packDocxToUint8Array(
-  children: FileChild[],
+  bodySections: BodySection[],
   resolved: ResolvedConfig,
   chrome: { header?: Header; footer?: Footer },
   coverBlocks: FileChild[],
   tocSlotBlocks: FileChild[],
 ): Promise<Uint8Array> {
   const listStyleRun = { font: resolved.font, size: resolved.fontHalfPoints };
-  // A cover page suppresses the header/footer/page-number on page 1 via Word's
-  // "different first page" (titlePg + empty first-page header/footer).
   const suppressFirstChrome = coverBlocks.length > 0 && Boolean(chrome.header || chrome.footer);
+  const nonEmptySections = bodySections.filter((section) => section.children.length > 0);
+  const normalizedSections: BodySection[] =
+    nonEmptySections.length > 0
+      ? nonEmptySections
+      : [{ orientation: resolved.defaultOrientation, children: [] }];
   const doc = new Document({
     ...resolved.metadata,
     numbering: NUMBERING_CONFIG,
@@ -306,24 +316,32 @@ async function packDocxToUint8Array(
         },
       ],
     },
-    sections: [
-      {
-        properties: {
-          page: {
-            size: resolved.size,
-            margin: resolved.margin,
-          },
-          ...(suppressFirstChrome ? { titlePage: true } : {}),
+    sections: normalizedSections.map((section, idx) => ({
+      properties: {
+        page: {
+          size: resolveSectionPageSize(resolved.pageSize, section.orientation),
+          margin: resolved.margin,
         },
-        ...(chrome.header
-          ? { headers: { default: chrome.header, ...(suppressFirstChrome ? { first: new Header({ children: [] }) } : {}) } }
-          : {}),
-        ...(chrome.footer
-          ? { footers: { default: chrome.footer, ...(suppressFirstChrome ? { first: new Footer({ children: [] }) } : {}) } }
-          : {}),
-        children: [...coverBlocks, ...tocSlotBlocks, ...children],
+        ...(idx === 0 && suppressFirstChrome ? { titlePage: true } : {}),
       },
-    ],
+      ...(chrome.header
+        ? {
+            headers:
+              idx === 0 && suppressFirstChrome
+                ? { default: chrome.header, first: new Header({ children: [] }) }
+                : { default: chrome.header },
+          }
+        : {}),
+      ...(chrome.footer
+        ? {
+            footers:
+              idx === 0 && suppressFirstChrome
+                ? { default: chrome.footer, first: new Footer({ children: [] }) }
+                : { default: chrome.footer },
+          }
+        : {}),
+      children: idx === 0 ? [...coverBlocks, ...tocSlotBlocks, ...section.children] : section.children,
+    })),
   });
 
   const blob = await Packer.toBlob(doc);
@@ -351,7 +369,10 @@ export async function buildDocxUint8Array(
   onWarning?: WarningHandler | null,
 ): Promise<Uint8Array> {
   resetImageDocPrIds();
-  const resolved = resolveDocumentConfig(documentConfig);
+  const allowClassPageMapping = styleResolver.source === "computed";
+  const pageRules = parseCssPageRules(html, allowClassPageMapping);
+  const inferredOrientation = documentConfig?.orientation ? undefined : pageRules.defaultOrientation;
+  const resolved = resolveDocumentConfig(documentConfig, inferredOrientation);
   const warn = resolveWarningHandler(onWarning);
   const $ = cheerio.load(`<body>${html.trim()}</body>`, { xml: false });
   if (imageResolver) await applyImageResolver($, imageResolver);
@@ -360,14 +381,23 @@ export async function buildDocxUint8Array(
     enabled: false,
     onWarning: warn,
   };
-  const children = htmlToDocxBlocks($, styleResolver, resolved.fontHalfPoints, bodyFieldOptions);
+  const bodySections = buildBodySections(
+    $,
+    styleResolver,
+    resolved.fontHalfPoints,
+    resolved.defaultOrientation,
+    pageRules,
+    !documentConfig?.orientation,
+    allowClassPageMapping,
+    bodyFieldOptions,
+  );
   const chrome = {
     header: buildHeader(documentConfig, resolved, warn),
     footer: buildFooter(documentConfig, resolved, warn),
   };
   const coverBlocks = buildCover(documentConfig, resolved, warn);
   const tocSlotBlocks = buildTocSlot(documentConfig, resolved, warn);
-  const packed = await packDocxToUint8Array(children, resolved, chrome, coverBlocks, tocSlotBlocks);
+  const packed = await packDocxToUint8Array(bodySections, resolved, chrome, coverBlocks, tocSlotBlocks);
   return patchPackedDocx(packed);
 }
 

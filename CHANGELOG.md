@@ -10,6 +10,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - **Allowlisted Word fields in page chrome.** `headerHtml`, `footerHtml`, `coverHtml`, and `tocHtml` support `<span data-docx-field="page|pages|section-pages|section">` markers (case-insensitive) that emit native PAGE / NUMPAGES / SECTIONPAGES / SECTION fields with styled runs. `{page}` and `{pages}` sugar in chrome HTML and the `pageNumber: boolean | string` option lower to the same markers. Unknown field names warn and drop; body content cannot use fields in v1. Guard: `npm run guard:fields` (writes sample DOCX to `output/guards/fields/`). (Extends field-token work by Alexander Wilms.)
 
+- **Mixed portrait/landscape sections from CSS.** Top-level `style="page:landscape|portrait|Name"`, `@page { size: … }` orientation inference, and inline named-page references work on the default inline path. Class→page mappings (`div.WordSection2 { page: … }`) require `styleSource: "computed"`. Explicit `documentConfig.orientation` still forces a single-orientation document. Guard: `npm run guard:mixed-orientation`. (Extends section work by Alexander Wilms.)
+
 ### Fixed
 
 - **Computed-path `lineHeight` parity between Node and the browser bundle.** The Playwright snapshot script (`computed-style-snapshot.browser.js`) now reads `lineHeight` like the bundled snapshot, and UA-derived heading line-height is cleared when UA `fontSize` is stripped — so Node computed-native and `dist/browser/` emit the same `w:spacing/@w:line` twips. Caught by `guard:browser-parity` on `heading-hierarchy`.
